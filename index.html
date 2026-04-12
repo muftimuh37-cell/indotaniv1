@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>TaniTrade - Platform Komoditas Nasional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #0f172a; }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: #0f172a; color: #e2e8f0; position: fixed; height: 100vh; overflow-y: auto; transition: transform 0.3s; z-index: 20; }
+        .logo { padding: 24px; border-bottom: 1px solid #1e293b; text-align: center; }
+        .logo h2 { font-size: 1.5rem; font-weight: 600; color: #fff; }
+        .logo p { font-size: 0.8rem; color: #94a3b8; }
+        .logo img { max-width: 80px; margin-bottom: 10px; border-radius: 12px; }
+        .nav-menu ul { list-style: none; padding: 16px 0; }
+        .nav-menu li { padding: 12px 24px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .nav-menu li i { width: 24px; text-align: center; }
+        .nav-menu li:hover, .nav-menu li.active { background: #1e293b; color: #14b8a6; border-left: 3px solid #14b8a6; }
+        .main-content { flex: 1; margin-left: 280px; background: #f8fafc; }
+        .topbar { background: #fff; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 40px; height: 40px; background: #14b8a6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0f172a; }
+        .content { padding: 32px; }
+        .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
+        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .stat-card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 0.9rem; color: #64748b; margin-bottom: 8px; }
+        .stat-card .value { font-size: 1.8rem; font-weight: 700; color: #0f172a; }
+        .btn { background: #14b8a6; color: #0f172a; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .btn-secondary { background: #e2e8f0; color: #1e293b; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-sm { padding: 4px 12px; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; font-weight: 600; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #fff; padding: 24px; border-radius: 16px; width: 500px; max-width: 90%; max-height: 80vh; overflow-y: auto; }
+        .print-invoice { font-family: monospace; padding: 20px; background: white; }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } .dashboard-cards { grid-template-columns: 1fr; } }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .search-bar { margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .search-bar input, .search-bar select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        #map { height: 400px; border-radius: 12px; }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; }
+        .login-card { background: white; padding: 32px; border-radius: 24px; width: 400px; max-width: 90%; }
+        .login-card h2 { margin-bottom: 24px; text-align: center; }
+        .tab-buttons { display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+        .tab-btn { background: none; border: none; padding: 8px 20px; cursor: pointer; font-weight: 500; border-radius: 20px; transition: 0.2s; }
+        .tab-btn.active { background: #14b8a6; color: #0f172a; }
+        .tab-btn:not(.active):hover { background: #e2e8f0; }
+        .chart-container { position: relative; width: 100%; height: 300px; margin-bottom: 20px; }
+        canvas#stockChart { width: 100% !important; height: 100% !important; }
+        .financial-report {
+            font-family: 'Courier New', monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            line-height: 1.6;
+        }
+        .financial-report h2, .financial-report h3 { text-align: center; margin-bottom: 10px; }
+        .financial-report hr { margin: 15px 0; border-top: 1px dashed #ccc; }
+        .financial-report .section { margin-bottom: 20px; }
+        .financial-report .row { display: flex; justify-content: space-between; margin: 5px 0; }
+        .financial-report .status { font-weight: bold; }
+        .financial-report .profit-loss { font-size: 1.2em; background: #f1f5f9; padding: 10px; border-radius: 8px; }
+        .financial-report .footer { text-align: center; font-size: 0.8em; color: #64748b; margin-top: 30px; }
+        .logo-preview { max-width: 100px; margin-top: 10px; border-radius: 12px; border: 1px solid #ccc; }
+        .color-palette {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .color-option {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.1s, border 0.1s;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .color-option.active {
+            border-color: #0f172a;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #0f172a;
+        }
+        .filter-group {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .filter-group label {
+            font-weight: 500;
+            margin: 0;
+        }
+        .filter-group select {
+            width: auto;
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+<body>
+<div id="appRoot"></div>
+
+<script>
+    // ========== DATA DASAR ==========
+    const defaultCommodities = [
+        { id: 1, nama: "Kopra", satuan: "kg", harga_acuan: 8000 },
+        { id: 2, nama: "Pala", satuan: "kg", harga_acuan: 45000 },
+        { id: 3, nama: "Cengkeh", satuan: "kg", harga_acuan: 70000 },
+        { id: 4, nama: "Kakao", satuan: "kg", harga_acuan: 25000 },
+        { id: 5, nama: "Jagung", satuan: "kg", harga_acuan: 5000 },
+        { id: 6, nama: "Kelapa", satuan: "kg", harga_acuan: 4000 }
+    ];
+    const defaultUsers = [
+        { id: 1, username: "admin", password: "admin123", role: "admin" },
+        { id: 2, username: "tengkulak1", password: "pass1", role: "tengkulak", tengkulakId: "TK1001" },
+        { id: 3, username: "tengkulak2", password: "pass2", role: "tengkulak", tengkulakId: "TK1002" }
+    ];
+    const defaultTengkulakProfiles = [
+        { id: "TK1001", nama: "Budi Santoso", perusahaan: "Budi Jaya", hp: "081234567890", alamat: "Jl. Raya No.1", provinsi: "Jawa Timur", kabupaten: "Malang", kecamatan: "Kedungkandang", desa: "Buring", komoditasUtama: "Kopra", createdAt: new Date().toISOString() },
+        { id: "TK1002", nama: "Siti Aminah", perusahaan: "Siti Makmur", hp: "082345678901", alamat: "Jl. Merdeka No.2", provinsi: "Jawa Barat", kabupaten: "Bandung", kecamatan: "Coblong", desa: "Dago", komoditasUtama: "Kakao", createdAt: new Date().toISOString() }
+    ];
+
+    function getColorPalette(count) {
+        const baseColors = ['#14b8a6', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec489a', '#10b981', '#f97316', '#6366f1', '#06b6d4', '#84cc16', '#d946ef'];
+        const palette = [];
+        for (let i = 0; i < count; i++) palette.push(baseColors[i % baseColors.length]);
+        return palette;
+    }
+
+    function initGlobalData() {
+        if (!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify(defaultUsers));
+        if (!localStorage.getItem("commodities")) localStorage.setItem("commodities", JSON.stringify(defaultCommodities));
+        if (!localStorage.getItem("tengkulakProfiles")) localStorage.setItem("tengkulakProfiles", JSON.stringify(defaultTengkulakProfiles));
+        const profiles = getTengkulakProfiles();
+        profiles.forEach(p => {
+            if (!localStorage.getItem(`farmers_${p.id}`)) localStorage.setItem(`farmers_${p.id}`, JSON.stringify([]));
+            if (!localStorage.getItem(`transactions_${p.id}`)) localStorage.setItem(`transactions_${p.id}`, JSON.stringify([]));
+            if (!localStorage.getItem(`cashflow_${p.id}`)) localStorage.setItem(`cashflow_${p.id}`, JSON.stringify([]));
+            if (!localStorage.getItem(`settings_${p.id}`)) {
+                localStorage.setItem(`settings_${p.id}`, JSON.stringify({
+                    primaryColor: "#14b8a6",
+                    modalAwal: 0,
+                    namaToko: p.perusahaan || "",
+                    logoBase64: null
+                }));
+            }
+        });
+    }
+
+    function getUsers() { return JSON.parse(localStorage.getItem("users")); }
+    function getCommodities() { return JSON.parse(localStorage.getItem("commodities")); }
+    function getTengkulakProfiles() { return JSON.parse(localStorage.getItem("tengkulakProfiles")); }
+    function setTengkulakProfiles(profiles) { localStorage.setItem("tengkulakProfiles", JSON.stringify(profiles)); }
+    function getFarmers(tengkulakId) { return JSON.parse(localStorage.getItem(`farmers_${tengkulakId}`)) || []; }
+    function setFarmers(tengkulakId, farmers) { localStorage.setItem(`farmers_${tengkulakId}`, JSON.stringify(farmers)); }
+    function getTransactions(tengkulakId) { return JSON.parse(localStorage.getItem(`transactions_${tengkulakId}`)) || []; }
+    function setTransactions(tengkulakId, transactions) { localStorage.setItem(`transactions_${tengkulakId}`, JSON.stringify(transactions)); }
+    function getCashflow(tengkulakId) { return JSON.parse(localStorage.getItem(`cashflow_${tengkulakId}`)) || []; }
+    function setCashflow(tengkulakId, cashflow) { localStorage.setItem(`cashflow_${tengkulakId}`, JSON.stringify(cashflow)); }
+    function getTengkulakSettings(tengkulakId) { return JSON.parse(localStorage.getItem(`settings_${tengkulakId}`)) || { primaryColor: "#14b8a6", modalAwal: 0, namaToko: "", logoBase64: null }; }
+    function setTengkulakSettings(tengkulakId, settings) { localStorage.setItem(`settings_${tengkulakId}`, JSON.stringify(settings)); }
+
+    function getStock(tengkulakId) {
+        const transactions = getTransactions(tengkulakId);
+        const commodities = getCommodities();
+        let stockMap = {};
+        commodities.forEach(c => stockMap[c.id] = 0);
+        transactions.forEach(t => {
+            if (t.tipe === 'pembelian') stockMap[t.komoditas_id] += t.jumlah;
+            else if (t.tipe === 'penjualan') stockMap[t.komoditas_id] -= t.jumlah;
+        });
+        return stockMap;
+    }
+
+    function getBalance(tengkulakId) {
+        const cashflow = getCashflow(tengkulakId);
+        let pemasukan = 0, pengeluaran = 0;
+        cashflow.forEach(cf => {
+            if (cf.tipe === 'pemasukan') pemasukan += cf.nominal;
+            else if (cf.tipe === 'pengeluaran') pengeluaran += cf.nominal;
+        });
+        return pemasukan - pengeluaran;
+    }
+
+    function getAggregateStats() {
+        const tengkulakProfiles = getTengkulakProfiles();
+        let totalFarmers = 0, totalTransactions = 0, totalVolume = 0, totalCashflow = 0;
+        tengkulakProfiles.forEach(p => {
+            const farmers = getFarmers(p.id);
+            const transactions = getTransactions(p.id);
+            totalFarmers += farmers.length;
+            totalTransactions += transactions.length;
+            totalVolume += transactions.reduce((sum, t) => sum + t.jumlah, 0);
+            const cashflow = getCashflow(p.id);
+            const net = cashflow.reduce((sum, cf) => sum + (cf.tipe === 'pemasukan' ? cf.nominal : -cf.nominal), 0);
+            totalCashflow += net;
+        });
+        return { totalFarmers, totalTransactions, totalVolume, totalCashflow };
+    }
+
+    function getAllTransactions() {
+        const profiles = getTengkulakProfiles();
+        let all = [];
+        profiles.forEach(p => {
+            const trans = getTransactions(p.id);
+            all.push(...trans.map(t => ({ ...t, tengkulakId: p.id, tengkulakName: p.nama })));
+        });
+        return all;
+    }
+
+    // ========== FILTER TIME HELPERS ==========
+    function isToday(dateStr) {
+        const today = new Date().toISOString().slice(0,10);
+        return dateStr === today;
+    }
+    function isThisWeek(dateStr) {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0,0,0,0);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        return date >= startOfWeek && date <= endOfWeek;
+    }
+    function isThisMonth(dateStr) {
+        const date = new Date(dateStr);
+        const now = new Date();
+        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    }
+    function isThisYear(dateStr) {
+        const date = new Date(dateStr);
+        const now = new Date();
+        return date.getFullYear() === now.getFullYear();
+    }
+
+    function filterByPeriode(transactions, periode) {
+        if (periode === 'today') return transactions.filter(t => isToday(t.tanggal));
+        if (periode === 'week') return transactions.filter(t => isThisWeek(t.tanggal));
+        if (periode === 'month') return transactions.filter(t => isThisMonth(t.tanggal));
+        if (periode === 'year') return transactions.filter(t => isThisYear(t.tanggal));
+        return transactions;
+    }
+
+    function getPurchaseByCommodity(transactions, periode) {
+        const filtered = filterByPeriode(transactions.filter(t => t.tipe === 'pembelian'), periode);
+        const commodities = getCommodities();
+        const map = {};
+        commodities.forEach(c => map[c.id] = 0);
+        filtered.forEach(t => { map[t.komoditas_id] += t.jumlah; });
+        return { labels: commodities.map(c => c.nama), data: commodities.map(c => map[c.id]) };
+    }
+
+    function getCashflowTimeSeries(cashflow, rangeType) {
+        const now = new Date();
+        let labels = [];
+        let pemasukanData = [];
+        let pengeluaranData = [];
+
+        if (rangeType === '7days') {
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(now.getDate() - i);
+                const dateStr = d.toISOString().slice(0,10);
+                labels.push(dateStr.slice(5));
+                let pem = 0, pen = 0;
+                cashflow.forEach(cf => {
+                    if (cf.tanggal === dateStr) {
+                        if (cf.tipe === 'pemasukan') pem += cf.nominal;
+                        else if (cf.tipe === 'pengeluaran') pen += cf.nominal;
+                    }
+                });
+                pemasukanData.push(pem);
+                pengeluaranData.push(pen);
+            }
+        } else if (rangeType === '4weeks') {
+            for (let i = 3; i >= 0; i--) {
+                const start = new Date(now);
+                start.setDate(now.getDate() - (now.getDay() + 7*i));
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                const label = `${start.toLocaleDateString('id-ID',{day:'numeric',month:'short'})} - ${end.toLocaleDateString('id-ID',{day:'numeric',month:'short'})}`;
+                labels.push(label);
+                let pem = 0, pen = 0;
+                cashflow.forEach(cf => {
+                    const cfDate = new Date(cf.tanggal);
+                    if (cfDate >= start && cfDate <= end) {
+                        if (cf.tipe === 'pemasukan') pem += cf.nominal;
+                        else if (cf.tipe === 'pengeluaran') pen += cf.nominal;
+                    }
+                });
+                pemasukanData.push(pem);
+                pengeluaranData.push(pen);
+            }
+        } else if (rangeType === '12months') {
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(now);
+                d.setMonth(now.getMonth() - i);
+                const monthStr = d.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+                labels.push(monthStr);
+                let pem = 0, pen = 0;
+                cashflow.forEach(cf => {
+                    const cfDate = new Date(cf.tanggal);
+                    if (cfDate.getMonth() === d.getMonth() && cfDate.getFullYear() === d.getFullYear()) {
+                        if (cf.tipe === 'pemasukan') pem += cf.nominal;
+                        else if (cf.tipe === 'pengeluaran') pen += cf.nominal;
+                    }
+                });
+                pemasukanData.push(pem);
+                pengeluaranData.push(pen);
+            }
+        } else if (rangeType === '5years') {
+            for (let i = 4; i >= 0; i--) {
+                const year = now.getFullYear() - i;
+                labels.push(year.toString());
+                let pem = 0, pen = 0;
+                cashflow.forEach(cf => {
+                    const cfDate = new Date(cf.tanggal);
+                    if (cfDate.getFullYear() === year) {
+                        if (cf.tipe === 'pemasukan') pem += cf.nominal;
+                        else if (cf.tipe === 'pengeluaran') pen += cf.nominal;
+                    }
+                });
+                pemasukanData.push(pem);
+                pengeluaranData.push(pen);
+            }
+        }
+        return { labels, pemasukanData, pengeluaranData };
+    }
+
+    // ========== AUTHENTICATION ==========
+    let currentUser = null;
+
+    function login(username, password) {
+        const users = getUsers();
+        const user = users.find(u => u.username === username && u.password === password);
+        if (user) {
+            currentUser = user;
+            sessionStorage.setItem("currentUser", JSON.stringify(user));
+            renderApp();
+        } else {
+            alert("Username atau password salah!");
+        }
+    }
+
+    function logout() {
+        currentUser = null;
+        sessionStorage.removeItem("currentUser");
+        renderApp();
+    }
+
+    function renderLogin() {
+        const root = document.getElementById("appRoot");
+        root.innerHTML = `
+            <div class="login-container">
+                <div class="login-card">
+                    <h2>TaniTrade</h2>
+                    <form id="loginForm">
+                        <div class="form-group"><label>Username</label><input type="text" id="username" required></div>
+                        <div class="form-group"><label>Password</label><input type="password" id="password" required></div>
+                        <button type="submit" class="btn" style="width:100%">Login</button>
+                    </form>
+                    <div style="margin-top: 16px; font-size:0.8rem; text-align:center;">Demo: admin/admin123 atau tengkulak1/pass1</div>
+                </div>
+            </div>
+        `;
+        document.getElementById("loginForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            login(document.getElementById("username").value, document.getElementById("password").value);
+        });
+    }
+
+    function renderApp() {
+        if (!currentUser) {
+            renderLogin();
+            return;
+        }
+        if (currentUser.role === "admin") {
+            renderAdminApp();
+        } else {
+            renderTengkulakApp();
+        }
+    }
+
+    // ========== ADMIN APP ==========
+    let adminCurrentMenu = "dashboard";
+    let adminCharts = {};
+
+    function renderAdminApp() {
+        const root = document.getElementById("appRoot");
+        root.innerHTML = `
+            <div class="app">
+                <aside class="sidebar" id="sidebar">
+                    <div class="logo"><h2>TaniTrade</h2><p>Administrator Nasional</p></div>
+                    <nav class="nav-menu">
+                        <ul>
+                            <li data-menu="dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+                            <li data-menu="tengkulak"><i class="fas fa-users"></i> Data Tengkulak</li>
+                            <li data-menu="commodities"><i class="fas fa-seedling"></i> Komoditas</li>
+                            <li data-menu="userManagement"><i class="fas fa-user-cog"></i> Manajemen User</li>
+                            <li data-menu="settings"><i class="fas fa-sliders-h"></i> Pengaturan</li>
+                            <li data-menu="reports"><i class="fas fa-chart-line"></i> Laporan Nasional</li>
+                        </ul>
+                    </nav>
+                </aside>
+                <main class="main-content">
+                    <header class="topbar">
+                        <button id="menuToggle" style="background:none; border:none; font-size:1.5rem; margin-right:auto; display:none;">☰</button>
+                        <div class="user-info"><span>Admin: ${currentUser.username}</span><div class="avatar">AD</div><button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button></div>
+                    </header>
+                    <div class="content" id="content"></div>
+                </main>
+            </div>
+        `;
+        document.getElementById("logoutBtn").addEventListener("click", logout);
+        document.getElementById("menuToggle").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
+        window.addEventListener("resize", () => { if(window.innerWidth > 768) document.getElementById("sidebar").classList.remove("open"); else document.getElementById("menuToggle").style.display = "block"; });
+        if(window.innerWidth <= 768) document.getElementById("menuToggle").style.display = "block";
+        document.querySelectorAll('.nav-menu li').forEach(li => {
+            li.addEventListener('click', () => {
+                document.querySelectorAll('.nav-menu li').forEach(l => l.classList.remove('active'));
+                li.classList.add('active');
+                adminCurrentMenu = li.dataset.menu;
+                renderAdminContent();
+            });
+        });
+        renderAdminContent();
+    }
+
+    function renderAdminContent() {
+        switch(adminCurrentMenu) {
+            case 'dashboard': renderAdminDashboard(); break;
+            case 'tengkulak': renderAdminTengkulakList(); break;
+            case 'commodities': renderAdminCommodities(); break;
+            case 'userManagement': renderUserManagement(); break;
+            case 'settings': renderAdminSettings(); break;
+            case 'reports': renderAdminReports(); break;
+            default: renderAdminDashboard();
+        }
+    }
+
+    function renderAdminDashboard() {
+        const stats = getAggregateStats();
+        const allTransactions = getAllTransactions();
+        const commodities = getCommodities();
+
+        const html = `
+            <div class="dashboard-cards">
+                <div class="stat-card"><h3>Total Petani Nasional</h3><div class="value">${stats.totalFarmers}</div></div>
+                <div class="stat-card"><h3>Total Transaksi</h3><div class="value">${stats.totalTransactions}</div></div>
+                <div class="stat-card"><h3>Total Volume (kg)</h3><div class="value">${stats.totalVolume.toLocaleString()}</div></div>
+                <div class="stat-card"><h3>Total Arus Kas (Rp)</h3><div class="value">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(stats.totalCashflow)}</div></div>
+            </div>
+            <div class="charts-row" style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px;">
+                <div class="card">
+                    <div class="filter-group">
+                        <label>Periode Produksi:</label>
+                        <select id="prodPeriode">
+                            <option value="today">Hari Ini</option>
+                            <option value="week" selected>Minggu Ini</option>
+                            <option value="month">Bulan Ini</option>
+                            <option value="year">Tahun Ini</option>
+                        </select>
+                    </div>
+                    <h4>Produksi Nasional per Komoditas (kg)</h4>
+                    <canvas id="prodChart"></canvas>
+                </div>
+                <div class="card">
+                    <div class="filter-group">
+                        <label>Rentang Arus Kas:</label>
+                        <select id="cashRange">
+                            <option value="7days">7 Hari Terakhir</option>
+                            <option value="4weeks" selected>4 Minggu Terakhir</option>
+                            <option value="12months">12 Bulan Terakhir</option>
+                            <option value="5years">5 Tahun Terakhir</option>
+                        </select>
+                    </div>
+                    <h4>Arus Kas Nasional (Rp)</h4>
+                    <canvas id="cashChart"></canvas>
+                </div>
+            </div>
+            <div class="card"><h4>Peta Produksi per Provinsi</h4><div id="map"></div></div>
+        `;
+        document.getElementById('content').innerHTML = html;
+
+        function updateProdChart() {
+            const periode = document.getElementById('prodPeriode').value;
+            const filtered = filterByPeriode(allTransactions.filter(t => t.tipe === 'pembelian'), periode);
+            const prodMap = {};
+            commodities.forEach(c => prodMap[c.id] = 0);
+            filtered.forEach(t => { prodMap[t.komoditas_id] += t.jumlah; });
+            const labels = commodities.map(c => c.nama);
+            const data = commodities.map(c => prodMap[c.id]);
+            if (adminCharts.prod) adminCharts.prod.destroy();
+            const ctx = document.getElementById('prodChart').getContext('2d');
+            adminCharts.prod = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Volume (kg)', data, backgroundColor: getColorPalette(commodities.length) }] } });
+        }
+
+        function updateCashChart() {
+            const range = document.getElementById('cashRange').value;
+            const allCashflow = [];
+            getTengkulakProfiles().forEach(p => {
+                allCashflow.push(...getCashflow(p.id));
+            });
+            const ts = getCashflowTimeSeries(allCashflow, range);
+            if (adminCharts.cash) adminCharts.cash.destroy();
+            const ctx = document.getElementById('cashChart').getContext('2d');
+            adminCharts.cash = new Chart(ctx, { type: 'line', data: { labels: ts.labels, datasets: [{ label: 'Net Cashflow', data: ts.pemasukanData.map((p, i) => p - ts.pengeluaranData[i]), borderColor: '#0f172a', fill: false }] } });
+        }
+
+        document.getElementById('prodPeriode').addEventListener('change', updateProdChart);
+        document.getElementById('cashRange').addEventListener('change', updateCashChart);
+        updateProdChart();
+        updateCashChart();
+
+        // Peta - Menggunakan HTTPS untuk tile layer
+        const tengkulakProfiles = getTengkulakProfiles();
+        const provinceMap = {};
+        tengkulakProfiles.forEach(p => {
+            const prov = p.provinsi;
+            if (!provinceMap[prov]) provinceMap[prov] = 0;
+            const transactions = getTransactions(p.id);
+            const totalVol = transactions.filter(t => t.tipe === 'pembelian').reduce((s,t)=>s+t.jumlah,0);
+            provinceMap[prov] += totalVol;
+        });
+        const map = L.map('map').setView([-2.5, 118], 5);
+        // PERBAIKAN: Menggunakan HTTPS untuk tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
+        const coords = { 'Aceh':[4.6951,96.7494], 'Sumatera Utara':[2.1154,99.5451], 'Sumatera Barat':[-0.7399,100.8], 'Riau':[0.2933,101.7068], 'Jambi':[-1.6101,103.6131], 'Sumatera Selatan':[-3.3194,103.9144], 'Bengkulu':[-3.7928,102.2608], 'Lampung':[-5.45,105.2667], 'Kep. Bangka Belitung':[-2.5,106.0], 'Kep. Riau':[0.9,104.4], 'DKI Jakarta':[-6.2088,106.8456], 'Jawa Barat':[-6.9175,107.6191], 'Jawa Tengah':[-7.1509,110.1403], 'DI Yogyakarta':[-7.7956,110.3695], 'Jawa Timur':[-7.5361,112.2384], 'Banten':[-6.4058,106.0640], 'Bali':[-8.4095,115.1889], 'Nusa Tenggara Barat':[-8.6529,116.3241], 'Nusa Tenggara Timur':[-8.6574,121.0794], 'Kalimantan Barat':[-0.2788,111.4753], 'Kalimantan Tengah':[-1.6815,113.3824], 'Kalimantan Selatan':[-3.0926,115.2838], 'Kalimantan Timur':[0.5387,116.4194], 'Kalimantan Utara':[2.5,116.0], 'Sulawesi Utara':[0.6247,123.9750], 'Sulawesi Tengah':[-1.4300,121.4456], 'Sulawesi Selatan':[-3.6688,119.9741], 'Sulawesi Tenggara':[-3.9594,122.5908], 'Gorontalo':[0.6999,122.4467], 'Sulawesi Barat':[-2.4974,119.3919], 'Maluku':[-3.2385,130.1453], 'Maluku Utara':[0.5937,127.6], 'Papua Barat':[-1.3363,133.1747], 'Papua':[-4.2699,138.0804] };
+        for (let prov in provinceMap) { if (coords[prov]) { const volume = provinceMap[prov]; const radius = Math.sqrt(volume) / 50; L.circleMarker(coords[prov], { radius: Math.min(20, Math.max(5, radius)), fillColor: '#14b8a6', color: '#0f172a', weight: 1, fillOpacity: 0.7 }).addTo(map).bindPopup(`<b>${prov}</b><br>Produksi: ${volume.toLocaleString()} kg`); } }
+    }
+
+    function renderAdminTengkulakList() {
+        const profiles = getTengkulakProfiles();
+        const html = `
+            <div class="flex-between"><h2>Daftar Tengkulak</h2><button class="btn" id="addTengkulakBtn">+ Tambah Tengkulak</button></div>
+            <table>
+                <thead><tr><th>ID</th><th>Nama</th><th>Perusahaan</th><th>Kontak</th><th>Provinsi</th><th>Aksi</th></tr></thead>
+                <tbody>
+                    ${profiles.map(p => `
+                        <tr>
+                            <td>${p.id}</td>
+                            <td>${p.nama}</td>
+                            <td>${p.perusahaan}</td>
+                            <td>${p.hp}</td>
+                            <td>${p.provinsi}</td>
+                            <td><button class="btn btn-sm btn-secondary" onclick="viewTengkulakData('${p.id}')">Lihat Data</button> <button class="btn btn-sm btn-danger" onclick="deleteTengkulak('${p.id}')">Hapus</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('content').innerHTML = html;
+        document.getElementById('addTengkulakBtn').onclick = () => showTengkulakForm();
+        window.viewTengkulakData = (id) => {
+            const p = profiles.find(p => p.id === id);
+            if (!p) return;
+            const farmers = getFarmers(id);
+            const transactions = getTransactions(id);
+            const stock = getStock(id);
+            alert(`Data ${p.nama}:\nPetani: ${farmers.length}\nTransaksi: ${transactions.length}\nStok: ${Object.values(stock).reduce((a,b)=>a+b,0)} kg\nSaldo: ${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(getBalance(id))}`);
+        };
+        window.deleteTengkulak = (id) => {
+            if (confirm(`Hapus tengkulak ${id}? Data akan dihapus permanen.`)) {
+                let profiles = getTengkulakProfiles().filter(p => p.id !== id);
+                setTengkulakProfiles(profiles);
+                localStorage.removeItem(`farmers_${id}`);
+                localStorage.removeItem(`transactions_${id}`);
+                localStorage.removeItem(`cashflow_${id}`);
+                let users = getUsers().filter(u => u.tengkulakId !== id);
+                localStorage.setItem("users", JSON.stringify(users));
+                renderAdminTengkulakList();
+            }
+        };
+    }
+
+    function showTengkulakForm(existing = null) {
+        const modalContent = `
+            <h3>${existing ? 'Edit Tengkulak' : 'Tambah Tengkulak'}</h3>
+            <form id="tengkulakForm">
+                <div class="form-group"><label>Nama Lengkap</label><input type="text" id="nama" value="${existing ? existing.nama : ''}" required></div>
+                <div class="form-group"><label>Perusahaan</label><input type="text" id="perusahaan" value="${existing ? existing.perusahaan : ''}"></div>
+                <div class="form-group"><label>Nomor HP</label><input type="text" id="hp" value="${existing ? existing.hp : ''}" required></div>
+                <div class="form-group"><label>Alamat</label><textarea id="alamat">${existing ? existing.alamat : ''}</textarea></div>
+                <div class="form-group"><label>Provinsi</label><input type="text" id="provinsi" value="${existing ? existing.provinsi : ''}"></div>
+                <div class="form-group"><label>Kabupaten</label><input type="text" id="kabupaten" value="${existing ? existing.kabupaten : ''}"></div>
+                <div class="form-group"><label>Kecamatan</label><input type="text" id="kecamatan" value="${existing ? existing.kecamatan : ''}"></div>
+                <div class="form-group"><label>Desa</label><input type="text" id="desa" value="${existing ? existing.desa : ''}"></div>
+                <div class="form-group"><label>Komoditas Utama</label><select id="komoditasUtama">${getCommodities().map(c => `<option value="${c.nama}" ${existing && existing.komoditasUtama === c.nama ? 'selected' : ''}>${c.nama}</option>`).join('')}</select></div>
+                <button type="submit" class="btn">Simpan</button> <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
+            </form>
+        `;
+        showModal(modalContent);
+        document.getElementById('tengkulakForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newProfile = {
+                id: existing ? existing.id : 'TK' + Date.now(),
+                nama: document.getElementById('nama').value,
+                perusahaan: document.getElementById('perusahaan').value,
+                hp: document.getElementById('hp').value,
+                alamat: document.getElementById('alamat').value,
+                provinsi: document.getElementById('provinsi').value,
+                kabupaten: document.getElementById('kabupaten').value,
+                kecamatan: document.getElementById('kecamatan').value,
+                desa: document.getElementById('desa').value,
+                komoditasUtama: document.getElementById('komoditasUtama').value,
+                createdAt: existing ? existing.createdAt : new Date().toISOString()
+            };
+            let profiles = getTengkulakProfiles();
+            if (existing) {
+                profiles = profiles.map(p => p.id === existing.id ? newProfile : p);
+            } else {
+                profiles.push(newProfile);
+                const users = getUsers();
+                users.push({
+                    id: Date.now(),
+                    username: newProfile.nama.toLowerCase().replace(/\s/g, ''),
+                    password: "pass123",
+                    role: "tengkulak",
+                    tengkulakId: newProfile.id
+                });
+                localStorage.setItem("users", JSON.stringify(users));
+                localStorage.setItem(`farmers_${newProfile.id}`, JSON.stringify([]));
+                localStorage.setItem(`transactions_${newProfile.id}`, JSON.stringify([]));
+                localStorage.setItem(`cashflow_${newProfile.id}`, JSON.stringify([]));
+            }
+            setTengkulakProfiles(profiles);
+            closeModal();
+            renderAdminTengkulakList();
+        });
+    }
+
+    function renderAdminCommodities() {
+        let commodities = getCommodities();
+        const html = `
+            <div class="flex-between"><h2>Komoditas</h2><button class="btn" id="addCommodityBtn">+ Tambah Komoditas</button></div>
+            <table>
+                <thead><tr><th>ID</th><th>Nama</th><th>Satuan</th><th>Harga Acuan</th><th>Aksi</th></tr></thead>
+                <tbody>
+                    ${commodities.map(c => `
+                        <tr>
+                            <td>${c.id}</td>
+                            <td>${c.nama}</td>
+                            <td>${c.satuan}</td>
+                            <td>${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(c.harga_acuan)}</td>
+                            <td><button class="btn btn-sm btn-secondary" onclick="editCommodity(${c.id})">Edit</button> <button class="btn btn-sm btn-danger" onclick="deleteCommodity(${c.id})">Hapus</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('content').innerHTML = html;
+        document.getElementById('addCommodityBtn').onclick = () => showCommodityForm();
+        window.editCommodity = (id) => { const commodity = commodities.find(c => c.id === id); if (commodity) showCommodityForm(commodity); };
+        window.deleteCommodity = (id) => { if (confirm('Hapus komoditas?')) { commodities = commodities.filter(c => c.id !== id); localStorage.setItem("commodities", JSON.stringify(commodities)); renderAdminCommodities(); } };
+    }
+
+    function showCommodityForm(commodity = null) {
+        const modalContent = `
+            <h3>${commodity ? 'Edit Komoditas' : 'Tambah Komoditas'}</h3>
+            <form id="commodityForm">
+                <div class="form-group"><label>Nama</label><input type="text" id="nama" value="${commodity ? commodity.nama : ''}" required></div>
+                <div class="form-group"><label>Satuan</label><input type="text" id="satuan" value="${commodity ? commodity.satuan : 'kg'}"></div>
+                <div class="form-group"><label>Harga Acuan (Rp)</label><input type="number" id="harga_acuan" value="${commodity ? commodity.harga_acuan : 0}"></div>
+                <button type="submit" class="btn">Simpan</button> <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
+            </form>
+        `;
+        showModal(modalContent);
+        document.getElementById('commodityForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newCommodity = { id: commodity ? commodity.id : Date.now(), nama: document.getElementById('nama').value, satuan: document.getElementById('satuan').value, harga_acuan: parseFloat(document.getElementById('harga_acuan').value) };
+            let commodities = getCommodities();
+            if (commodity) commodities = commodities.map(c => c.id === commodity.id ? newCommodity : c);
+            else commodities.push(newCommodity);
+            localStorage.setItem("commodities", JSON.stringify(commodities));
+            closeModal();
+            renderAdminCommodities();
+        });
+    }
+
+    function renderUserManagement() {
+        const users = getUsers();
+        const html = `
+            <div class="flex-between"><h2>Manajemen User</h2><button class="btn" id="addUserBtn">+ Tambah User</button></div>
+            <table>
+                <thead><tr><th>Username</th><th>Role</th><th>Tengkulak ID</th><th>Aksi</th></tr></thead>
+                <tbody>
+                    ${users.map(u => `
+                        <tr>
+                            <td>${u.username}</td>
+                            <td>${u.role === 'admin' ? 'Administrator' : 'Tengkulak'}</td>
+                            <td>${u.tengkulakId || '-'}</td>
+                            <td><button class="btn btn-sm btn-secondary" onclick="editUser(${u.id})">Edit</button> <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Hapus</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('content').innerHTML = html;
+        document.getElementById('addUserBtn').onclick = () => showUserForm();
+        window.editUser = (id) => { const user = getUsers().find(u => u.id === id); if (user) showUserForm(user); };
+        window.deleteUser = (id) => { if (confirm('Hapus user ini?')) { let users = getUsers().filter(u => u.id !== id); localStorage.setItem("users", JSON.stringify(users)); renderUserManagement(); } };
+    }
+
+    function openCreateTengkulakModal(callback) {
+        const modalContent = `
+            <h3>Tambah Tengkulak Baru</h3>
+            <form id="createTengkulakForm">
+                <div class="form-group"><label>Nama Lengkap</label><input type="text" id="nama" required></div>
+                <div class="form-group"><label>Perusahaan</label><input type="text" id="perusahaan"></div>
+                <div class="form-group"><label>Nomor HP</label><input type="text" id="hp" required></div>
+                <div class="form-group"><label>Alamat</label><textarea id="alamat"></textarea></div>
+                <div class="form-group"><label>Provinsi</label><input type="text" id="provinsi"></div>
+                <div class="form-group"><label>Kabupaten</label><input type="text" id="kabupaten"></div>
+                <div class="form-group"><label>Kecamatan</label><input type="text" id="kecamatan"></div>
+                <div class="form-group"><label>Desa</label><input type="text" id="desa"></div>
+                <div class="form-group"><label>Komoditas Utama</label><select id="komoditasUtama">${getCommodities().map(c => `<option value="${c.nama}">${c.nama}</option>`).join('')}</select></div>
+                <button type="submit" class="btn">Simpan Tengkulak</button> <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
+            </form>
+        `;
+        showModal(modalContent);
+        document.getElementById('createTengkulakForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newProfile = {
+                id: 'TK' + Date.now(),
+                nama: document.getElementById('nama').value,
+                perusahaan: document.getElementById('perusahaan').value,
+                hp: document.getElementById('hp').value,
+                alamat: document.getElementById('alamat').value,
+                provinsi: document.getElementById('provinsi').value,
+                kabupaten: document.getElementById('kabupaten').value,
+                kecamatan: document.getElementById('kecamatan').value,
+                desa: document.getElementById('desa').value,
+                komoditasUtama: document.getElementById('komoditasUtama').value,
+                createdAt: new Date().toISOString()
+            };
+            let profiles = getTengkulakProfiles();
+            profiles.push(newProfile);
+            setTengkulakProfiles(profiles);
+            localStorage.setItem(`farmers_${newProfile.id}`, JSON.stringify([]));
+            localStorage.setItem(`transactions_${newProfile.id}`, JSON.stringify([]));
+            localStorage.setItem(`cashflow_${newProfile.id}`, JSON.stringify([]));
+            closeModal();
+            if (callback) callback(newProfile.id);
+        });
+    }
+
+    function showUserForm(user = null) {
+        const profiles = getTengkulakProfiles();
+        const modalContent = `
+            <h3>${user ? 'Edit User' : 'Tambah User'}</h3>
+            <form id="userForm">
+                <div class="form-group"><label>Username</label><input type="text" id="username" value="${user ? user.username : ''}" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="password" value="" ${user ? '' : 'required'} placeholder="${user ? 'Kosongkan jika tidak diubah' : ''}"></div>
+                <div class="form-group"><label>Role</label>
+                    <select id="role" onchange="toggleTengkulakSelect()">
+                        <option value="admin" ${user && user.role === 'admin' ? 'selected' : ''}>Administrator</option>
+                        <option value="tengkulak" ${user && user.role === 'tengkulak' ? 'selected' : ''}>Tengkulak</option>
+                    </select>
+                </div>
+                <div class="form-group" id="tengkulakSelectGroup" style="display:${user && user.role === 'tengkulak' ? 'block' : 'none'}">
+                    <label>Tengkulak</label>
+                    <select id="tengkulakId">
+                        <option value="">-- Pilih Tengkulak --</option>
+                        ${profiles.map(p => `<option value="${p.id}" ${user && user.tengkulakId === p.id ? 'selected' : ''}>${p.nama} (${p.id})</option>`).join('')}
+                        <option value="NEW">+ Tambah Tengkulak Baru</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Simpan</button> <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
+            </form>
+        `;
+        showModal(modalContent);
+        window.toggleTengkulakSelect = () => {
+            const role = document.getElementById('role').value;
+            const group = document.getElementById('tengkulakSelectGroup');
+            group.style.display = role === 'tengkulak' ? 'block' : 'none';
+        };
+        const form = document.getElementById('userForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            let tengkulakId = null;
+            if (role === 'tengkulak') {
+                const selected = document.getElementById('tengkulakId').value;
+                if (selected === 'NEW') {
+                    closeModal();
+                    openCreateTengkulakModal((newId) => {
+                        const users = getUsers();
+                        const newUser = { id: Date.now(), username, password: password || 'pass123', role: 'tengkulak', tengkulakId: newId };
+                        users.push(newUser);
+                        localStorage.setItem("users", JSON.stringify(users));
+                        renderUserManagement();
+                    });
+                    return;
+                } else if (!selected) {
+                    alert('Pilih tengkulak');
+                    return;
+                } else {
+                    tengkulakId = selected;
+                }
+            }
+            let users = getUsers();
+            if (user) {
+                const updatedUser = { ...user, username, role, tengkulakId };
+                if (password) updatedUser.password = password;
+                users = users.map(u => u.id === user.id ? updatedUser : u);
+            } else {
+                const newUser = { id: Date.now(), username, password: password || 'default', role, tengkulakId };
+                users.push(newUser);
+            }
+            localStorage.setItem("users", JSON.stringify(users));
+            closeModal();
+            renderUserManagement();
+        });
+        if (user && user.role === 'tengkulak') document.getElementById('tengkulakSelectGroup').style.display = 'block';
+    }
+
+    function renderAdminSettings() {
+        const html = `
+            <h2>Pengaturan Sistem</h2>
+            <div class="card">
+                <h3>Konfigurasi Umum</h3>
+                <form id="settingsForm">
+                    <div class="form-group"><label>Nama Aplikasi</label><input type="text" id="appName" value="TaniTrade"></div>
+                    <div class="form-group"><label>URL Server Nasional</label><input type="text" id="apiUrl" value="https://api.tanitrade.go.id"></div>
+                    <button type="submit" class="btn">Simpan Pengaturan</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3>Reset Data</h3>
+                <button class="btn btn-danger" id="resetAllDataBtn" onclick="confirmReset()">Reset Seluruh Data</button>
+                <p style="margin-top:8px; font-size:0.8rem;">Menghapus semua data petani, transaksi, dan cashflow semua tengkulak.</p>
+            </div>
+        `;
+        document.getElementById('content').innerHTML = html;
+        document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Pengaturan disimpan (simulasi)');
+        });
+        window.confirmReset = () => {
+            if (confirm('PERINGATAN: Semua data akan dihapus! Lanjutkan?')) {
+                const profiles = getTengkulakProfiles();
+                profiles.forEach(p => {
+                    localStorage.removeItem(`farmers_${p.id}`);
+                    localStorage.removeItem(`transactions_${p.id}`);
+                    localStorage.removeItem(`cashflow_${p.id}`);
+                    localStorage.setItem(`farmers_${p.id}`, JSON.stringify([]));
+                    localStorage.setItem(`transactions_${p.id}`, JSON.stringify([]));
+                    localStorage.setItem(`cashflow_${p.id}`, JSON.stringify([]));
+                });
+                alert('Data telah direset.');
+                renderAdminDashboard();
+            }
+        };
+    }
+
+    function renderAdminReports() {
+        const html = `<h2>Laporan Nasional</h2><div class="card"><button class="btn" id="exportAllExcel">Export Semua Data (Excel)</button><button class="btn btn-secondary" id="printAll">Cetak Laporan</button></div>`;
+        document.getElementById('content').innerHTML = html;
+        document.getElementById('exportAllExcel').onclick = () => { const allTrans = getAllTransactions(); const ws = XLSX.utils.json_to_sheet(allTrans); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Semua Transaksi'); XLSX.writeFile(wb, `laporan_nasional_${new Date().toISOString().slice(0,10)}.xlsx`); };
+        document.getElementById('printAll').onclick = () => window.print();
+    }
+
+    // ========== TENGKULAK APP ==========
+    let tengkulakCurrentMenu = "dashboard";
+    let tengkulakCharts = {};
+
+    function applyTengkulakSettings(tengkulakId) {
+        const settings = getTengkulakSettings(tengkulakId);
+        const primaryColor = settings.primaryColor || "#14b8a6";
+        const style = document.createElement('style');
+        style.id = `dynamic-style-${tengkulakId}`;
+        style.textContent = `
+            .btn, .tab-btn.active, .avatar, .nav-menu li.active, .nav-menu li:hover { 
+                background-color: ${primaryColor} !important; 
+                color: #0f172a !important; 
+                border-left-color: ${primaryColor} !important;
+            }
+            .btn, .tab-btn.active { border-color: ${primaryColor}; }
+            .stat-card .value, .dashboard-cards .stat-card h3 { color: #0f172a; }
+            .sidebar .nav-menu li.active, .sidebar .nav-menu li:hover { border-left-color: ${primaryColor} !important; }
+        `;
+        const oldStyle = document.getElementById(`dynamic-style-${tengkulakId}`);
+        if (oldStyle) oldStyle.remove();
+        document.head.appendChild(style);
+        
+        const logoDiv = document.querySelector('.sidebar .logo');
+        if (logoDiv) {
+            let imgElement = logoDiv.querySelector('.logo-img');
+            if (settings.logoBase64) {
+                if (!imgElement) {
+                    imgElement = document.createElement('img');
+                    imgElement.className = 'logo-img';
+                    imgElement.style.maxWidth = '80px';
+                    imgElement.style.marginBottom = '10px';
+                    imgElement.style.borderRadius = '12px';
+                    logoDiv.insertBefore(imgElement, logoDiv.firstChild);
+                }
+                imgElement.src = settings.logoBase64;
+            } else {
+                if (imgElement) imgElement.remove();
+            }
+            let namaTokoElem = logoDiv.querySelector('.nama-toko');
+            if (namaTokoElem) namaTokoElem.remove();
+            if (settings.namaToko) {
+                const p = document.createElement('p');
+                p.className = 'nama-toko';
+                p.style.fontSize = '0.8rem';
+                p.style.color = '#94a3b8';
+                p.innerText = settings.namaToko;
+                logoDiv.appendChild(p);
+            }
+        }
+    }
+
+    function renderTengkulakApp() {
+        const tengkulakId = currentUser.tengkulakId;
+        const profile = getTengkulakProfiles().find(p => p.id === tengkulakId);
+        if (!profile) { alert("Profil tengkulak tidak ditemukan!"); logout(); return; }
+        const root = document.getElementById("appRoot");
+        root.innerHTML = `
+            <div class="app">
+                <aside class="sidebar" id="sidebar">
+                    <div class="logo">
+                        <h2>TaniTrade</h2>
+                        <p>Tengkulak: ${profile.nama}</p>
+                    </div>
+                    <nav class="nav-menu">
+                        <ul>
+                            <li data-menu="dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+                            <li data-menu="transactions"><i class="fas fa-exchange-alt"></i> Transaksi</li>
+                            <li data-menu="stock"><i class="fas fa-boxes"></i> Stok Komoditas</li>
+                            <li data-menu="farmers"><i class="fas fa-users"></i> Petani</li>
+                            <li data-menu="reports"><i class="fas fa-print"></i> Laporan</li>
+                            <li data-menu="settings"><i class="fas fa-sliders-h"></i> Pengaturan</li>
+                        </ul>
+                    </nav>
+                </aside>
+                <main class="main-content">
+                    <header class="topbar">
+                        <button id="menuToggle" style="background:none; border:none; font-size:1.5rem; margin-right:auto; display:none;">☰</button>
+                        <div class="user-info">
+                            <span>${profile.nama}</span>
+                            <div class="avatar">TK</div>
+                            <button id="syncDataBtn" class="btn sync-btn btn-sm"><i class="fas fa-cloud-upload-alt"></i> Sync</button>
+                            <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                        </div>
+                    </header>
+                    <div class="content" id="content"></div>
+                </main>
+            </div>
+        `;
+        document.getElementById("logoutBtn").addEventListener("click", logout);
+        document.getElementById("syncDataBtn").addEventListener("click", () => {
+            const payload = { tengkulak: profile, farmers: getFarmers(tengkulakId), transactions: getTransactions(tengkulakId), cashflow: getCashflow(tengkulakId), stock: getStock(tengkulakId), syncTime: new Date().toISOString() };
+            console.log("Sync ke server nasional:", payload);
+            alert("Data siap dikirim ke server nasional. (Simulasi)");
+        });
+        document.getElementById("menuToggle").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
+        window.addEventListener("resize", () => { if(window.innerWidth > 768) document.getElementById("sidebar").classList.remove("open"); else document.getElementById("menuToggle").style.display = "block"; });
+        if(window.innerWidth <= 768) document.getElementById("menuToggle").style.display = "block";
+        document.querySelectorAll('.nav-menu li').forEach(li => {
+            li.addEventListener('click', () => {
+                document.querySelectorAll('.nav-menu li').forEach(l => l.classList.remove('active'));
+                li.classList.add('active');
+                tengkulakCurrentMenu = li.dataset.menu;
+                renderTengkulakContent(tengkulakId);
+            });
+        });
+        applyTengkulakSettings(tengkulakId);
+        renderTengkulakContent(tengkulakId);
+    }
+
+    function renderTengkulakContent(tengkulakId) {
+        switch(tengkulakCurrentMenu) {
+            case 'dashboard': renderTengkulakDashboard(tengkulakId); break;
+            case 'transactions': renderTengkulakCombinedTransactions(tengkulakId); break;
+            case 'stock': renderTengkulakStock(tengkulakId); break;
+            case 'farmers': renderTengkulakFarmers(tengkulakId); break;
+            case 'reports': renderTengkulakReports(tengkulakId); break;
+            case 'settings': renderTengkulakSettings(tengkulakId); break;
+            default: renderTengkulakDashboard(tengkulakId);
+        }
+    }
+
+    // ========== DASHBOARD TENGKULAK (dengan filter) ==========
+    function renderTengkulakDashboard(tengkulakId) {
+        const farmers = getFarmers(tengkulakId);
+        const transactions = getTransactions(tengkulakId);
+        const today = new Date().toISOString().slice(0,10);
+        const thisMonth = today.slice(0,7);
+        const transToday = transactions.filter(t => t.tanggal === today);
+        const transMonth = transactions.filter(t => t.tanggal.startsWith(thisMonth) && t.tipe === 'pembelian');
+        const totalPembelianBulan = transMonth.reduce((sum, t) => sum + t.total, 0);
+        const stock = getStock(tengkulakId);
+        const commodities = getCommodities();
+        let totalStockValue = 0;
+        commodities.forEach(c => totalStockValue += (stock[c.id] || 0) * (c.harga_acuan || 0));
+        const balance = getBalance(tengkulakId);
+        const cashflowAll = getCashflow(tengkulakId);
+        const recentCashflow = [...cashflowAll].sort((a,b) => b.tanggal.localeCompare(a.tanggal)).slice(0,5);
+
+        const html = `
+            <div class="dashboard-cards">
+                <div class="stat-card"><h3>Total Petani</h3><div class="value">${farmers.length}</div></div>
+                <div class="stat-card"><h3>Transaksi Hari Ini</h3><div class="value">${transToday.length}</div></div>
+                <div class="stat-card"><h3>Pembelian Bulan Ini</h3><div class="value">${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(totalPembelianBulan)}</div></div>
+                <div class="stat-card"><h3>Total Stok (Estimasi)</h3><div class="value">${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(totalStockValue)}</div></div>
+                <div class="stat-card"><h3>Saldo Kas</h3><div class="value">${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(balance)}</div></div>
+            </div>
+            <div class="charts-row" style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px;">
+                <div class="card">
+                    <div class="filter-group">
+                        <label>Periode Pembelian:</label>
+                        <select id="purchasePeriode">
+                            <option value="today">Hari Ini</option>
+                            <option value="week" selected>Minggu Ini</option>
+                            <option value="month">Bulan Ini</option>
+                            <option value="year">Tahun Ini</option>
+                        </select>
+                    </div>
+                    <h3>Grafik Pembelian Komoditas</h3>
+                    <canvas id="pembelianChart"></canvas>
+                </div>
+                <div class="card">
+                    <div class="filter-group">
+                        <label>Rentang Arus Kas:</label>
+                        <select id="cashRange">
+                            <option value="7days">7 Hari Terakhir</option>
+                            <option value="4weeks" selected>4 Minggu Terakhir</option>
+                            <option value="12months">12 Bulan Terakhir</option>
+                            <option value="5years">5 Tahun Terakhir</option>
+                        </select>
+                    </div>
+                    <h3>Grafik Arus Kas</h3>
+                    <canvas id="cashflowChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex-between"><h3>Aktivitas Arus Kas Terbaru</h3></div>
+                <div style="overflow-x:auto; margin-top:16px;">
+                    <table style="width:100%">
+                        <thead><tr><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Nominal</th><th>Keterangan</th></tr></thead>
+                        <tbody>
+                            ${recentCashflow.map(cf => `<tr><td>${cf.tanggal}</td><td>${cf.tipe === 'pemasukan' ? '✅ Pemasukan' : '🔻 Pengeluaran'}</td><td>${cf.kategori}</td><td>${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(cf.nominal)}</td><td>${cf.keterangan || '-'}</td></tr>`).join('')}
+                            ${recentCashflow.length === 0 ? '<tr><td colspan="5" style="text-align:center;">Belum ada aktivitas kas</td></tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('content').innerHTML = html;
+
+        function updatePembelianChart() {
+            const periode = document.getElementById('purchasePeriode').value;
+            const { labels, data } = getPurchaseByCommodity(transactions, periode);
+            if (tengkulakCharts.pembelian) tengkulakCharts.pembelian.destroy();
+            const ctx = document.getElementById('pembelianChart').getContext('2d');
+            tengkulakCharts.pembelian = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Jumlah (kg)', data, backgroundColor: getColorPalette(labels.length) }] } });
+        }
+
+        function updateCashflowChart() {
+            const range = document.getElementById('cashRange').value;
+            const ts = getCashflowTimeSeries(cashflowAll, range);
+            if (tengkulakCharts.cashflow) tengkulakCharts.cashflow.destroy();
+            const ctx = document.getElementById('cashflowChart').getContext('2d');
+            tengkulakCharts.cashflow = new Chart(ctx, { type: 'line', data: { labels: ts.labels, datasets: [{ label: 'Pemasukan', data: ts.pemasukanData, borderColor: '#10b981', fill: false }, { label: 'Pengeluaran', data: ts.pengeluaranData, borderColor: '#ef4444', fill: false }] } });
+        }
+
+        document.getElementById('purchasePeriode').addEventListener('change', updatePembelianChart);
+        document.getElementById('cashRange').addEventListener('change', updateCashflowChart);
+        updatePembelianChart();
+        updateCashflowChart();
+    }
+
+    // ========== TRANSAKSI TENGKULAK (Gabungan) ==========
+    function renderTengkulakCombinedTransactions(tengkulakId) {
+        const html = `
+            <div class="card">
+                <h3>Input Transaksi</h3>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="buy">Pembelian dari Petani</button>
+                    <button class="tab-btn" data-tab="sell">Penjualan Stok</button>
+                    <button class="tab-btn" data-tab="operational">Operasional</button>
+                </div>
+                <div id="transactionFormContainer"></div>
+            </div>
+            <div class="card">
+                <h3>Histori Transaksi</h3>
+                <div class="search-bar">
+                    <input type="text" id="filterTanggal" placeholder="Filter tanggal (YYYY-MM-DD)">
+                    <select id="filterJenis">
+                        <option value="">Semua Jenis</option>
+                        <option value="pembelian">Pembelian</option>
+                        <option value="penjualan">Penjualan</option>
+                        <option value="operasional">Operasional</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%">
+                        <thead>
+                            <tr><th>Tanggal</th><th>Jenis</th><th>Detail</th><th>Jumlah (kg)</th><th>Harga/kg</th><th>Total</th><th>Metode</th><th>Keterangan</th><th>Aksi</th></tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('content').innerHTML = html;
+        const buyBtn = document.querySelector('[data-tab="buy"]');
+        const sellBtn = document.querySelector('[data-tab="sell"]');
+        const opBtn = document.querySelector('[data-tab="operational"]');
+        const formContainer = document.getElementById('transactionFormContainer');
+        const filterTanggal = document.getElementById('filterTanggal');
+        const filterJenis = document.getElementById('filterJenis');
+
+        let currentTab = 'buy';
+
+        function renderBuyForm() {
+            const farmers = getFarmers(tengkulakId);
+            const commodities = getCommodities();
+            const stock = getStock(tengkulakId);
+            const farmerOptions = farmers.map(f => `<option value="${f.id}">${f.nama} (${f.hp || 'no HP'})</option>`).join('');
+            const formHtml = `
+                <form id="transForm">
+                    <div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" value="${new Date().toISOString().slice(0,10)}" required></div>
+                    <div class="form-group"><label>Pilih Petani</label>
+                        <select id="petani_select">
+                            <option value="">-- Pilih Petani --</option>
+                            ${farmerOptions}
+                            <option value="NEW">+ Tambah Petani Baru</option>
+                        </select>
+                    </div>
+                    <div id="newFarmerFields" style="display:none;">
+                        <div class="form-group"><label>Nama Petani Baru</label><input type="text" id="petani_nama_new"></div>
+                        <div class="form-group"><label>No HP</label><input type="text" id="petani_hp_new"></div>
+                        <div class="form-group"><label>Desa</label><input type="text" id="petani_desa_new"></div>
+                        <div class="form-group"><label>Kecamatan</label><input type="text" id="petani_kecamatan_new"></div>
+                        <div class="form-group"><label>Komoditas Utama</label><select id="petani_komoditas_new">${commodities.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('')}</select></div>
+                    </div>
+                    <div class="form-group"><label>Komoditas yang Dibeli</label><select id="komoditas_id">${commodities.map(c => `<option value="${c.id}">${c.nama} (stok: ${stock[c.id] || 0} kg)</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Jumlah (kg)</label><input type="number" id="jumlah" step="0.1" required></div>
+                    <div class="form-group"><label>Harga per kg (Rp)</label><input type="number" id="harga" required></div>
+                    <div class="form-group"><label>Metode Pembayaran</label><select id="metode"><option>Cash</option><option>Transfer</option></select></div>
+                    <div class="form-group"><label>Keterangan (opsional)</label><input type="text" id="keterangan" placeholder="Catatan tambahan..."></div>
+                    <button type="submit" class="btn">Simpan Transaksi</button>
+                </form>
+            `;
+            formContainer.innerHTML = formHtml;
+            const petaniSelect = document.getElementById('petani_select');
+            const newFarmerDiv = document.getElementById('newFarmerFields');
+            petaniSelect.addEventListener('change', () => {
+                newFarmerDiv.style.display = petaniSelect.value === 'NEW' ? 'block' : 'none';
+            });
+            document.getElementById('transForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const tanggal = document.getElementById('tanggal').value;
+                let petaniId = null;
+                let petaniData = null;
+                if (petaniSelect.value === 'NEW') {
+                    const nama = document.getElementById('petani_nama_new').value.trim();
+                    if (!nama) { alert("Nama petani baru harus diisi"); return; }
+                    petaniData = {
+                        nama: nama,
+                        hp: document.getElementById('petani_hp_new').value,
+                        desa: document.getElementById('petani_desa_new').value,
+                        kecamatan: document.getElementById('petani_kecamatan_new').value,
+                        komoditas_utama: document.getElementById('petani_komoditas_new').value
+                    };
+                    let existing = farmers.find(f => f.nama.toLowerCase() === petaniData.nama.toLowerCase() && f.hp === petaniData.hp);
+                    if (existing) {
+                        petaniId = existing.id;
+                        petaniData = existing;
+                    } else {
+                        const newFarmer = { id: Date.now(), ...petaniData };
+                        let newFarmers = [...farmers, newFarmer];
+                        setFarmers(tengkulakId, newFarmers);
+                        petaniId = newFarmer.id;
+                        petaniData = newFarmer;
+                    }
+                } else if (petaniSelect.value) {
+                    petaniId = parseInt(petaniSelect.value);
+                    petaniData = farmers.find(f => f.id === petaniId);
+                } else {
+                    alert("Pilih petani atau tambah petani baru");
+                    return;
+                }
+                const komoditas_id = parseInt(document.getElementById('komoditas_id').value);
+                const jumlah = parseFloat(document.getElementById('jumlah').value);
+                const harga = parseFloat(document.getElementById('harga').value);
+                const total = jumlah * harga;
+                const komoditas = getCommodities().find(c => c.id === komoditas_id);
+                const keterangan = document.getElementById('keterangan').value;
+                const newTrans = {
+                    id: Date.now(),
+                    tanggal,
+                    tipe: 'pembelian',
+                    komoditas_id,
+                    komoditas_nama: komoditas.nama,
+                    jumlah,
+                    harga_per_kg: harga,
+                    total,
+                    metode_pembayaran: document.getElementById('metode').value,
+                    petani_id: petaniId,
+                    keterangan
+                };
+                let transactions = getTransactions(tengkulakId);
+                transactions.push(newTrans);
+                setTransactions(tengkulakId, transactions);
+                let cashflow = getCashflow(tengkulakId);
+                cashflow.push({
+                    id: Date.now() + Math.random(),
+                    tanggal,
+                    tipe: 'pengeluaran',
+                    kategori: 'Pembelian dari Petani',
+                    nominal: total,
+                    keterangan: `Beli ${komoditas.nama} ${jumlah}kg dari ${petaniData.nama}` + (keterangan ? ` (${keterangan})` : ''),
+                    fromCommodity: true
+                });
+                setCashflow(tengkulakId, cashflow);
+                alert('Transaksi pembelian berhasil disimpan');
+                printNotaTengkulak(newTrans, tengkulakId);
+                refreshHistory();
+            });
+        }
+
+        function renderSellForm() {
+            const commodities = getCommodities();
+            const stock = getStock(tengkulakId);
+            const formHtml = `
+                <form id="transForm">
+                    <div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" value="${new Date().toISOString().slice(0,10)}" required></div>
+                    <div class="form-group"><label>Komoditas</label><select id="komoditas_id">${commodities.map(c => `<option value="${c.id}">${c.nama} (stok: ${stock[c.id] || 0} kg)</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Jumlah (kg)</label><input type="number" id="jumlah" step="0.1" required></div>
+                    <div class="form-group"><label>Harga per kg (Rp)</label><input type="number" id="harga" required></div>
+                    <div class="form-group"><label>Metode Pembayaran</label><select id="metode"><option>Cash</option><option>Transfer</option></select></div>
+                    <div class="form-group"><label>Keterangan (opsional)</label><input type="text" id="keterangan" placeholder="Catatan tambahan..."></div>
+                    <button type="submit" class="btn">Simpan Transaksi</button>
+                </form>
+            `;
+            formContainer.innerHTML = formHtml;
+            document.getElementById('transForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const tanggal = document.getElementById('tanggal').value;
+                const komoditas_id = parseInt(document.getElementById('komoditas_id').value);
+                const jumlah = parseFloat(document.getElementById('jumlah').value);
+                const harga = parseFloat(document.getElementById('harga').value);
+                const total = jumlah * harga;
+                const komoditas = getCommodities().find(c => c.id === komoditas_id);
+                const keterangan = document.getElementById('keterangan').value;
+                const currentStock = getStock(tengkulakId)[komoditas_id] || 0;
+                if (currentStock < jumlah) {
+                    alert(`Stok ${komoditas.nama} tidak mencukupi! Stok: ${currentStock} kg`);
+                    return;
+                }
+                const newTrans = {
+                    id: Date.now(),
+                    tanggal,
+                    tipe: 'penjualan',
+                    komoditas_id,
+                    komoditas_nama: komoditas.nama,
+                    jumlah,
+                    harga_per_kg: harga,
+                    total,
+                    metode_pembayaran: document.getElementById('metode').value,
+                    buyer: 'Pedagang Lain',
+                    keterangan
+                };
+                let transactions = getTransactions(tengkulakId);
+                transactions.push(newTrans);
+                setTransactions(tengkulakId, transactions);
+                let cashflow = getCashflow(tengkulakId);
+                cashflow.push({
+                    id: Date.now() + Math.random(),
+                    tanggal,
+                    tipe: 'pemasukan',
+                    kategori: 'Penjualan',
+                    nominal: total,
+                    keterangan: `Jual ${komoditas.nama} ${jumlah}kg` + (keterangan ? ` (${keterangan})` : ''),
+                    fromCommodity: true
+                });
+                setCashflow(tengkulakId, cashflow);
+                alert('Transaksi penjualan berhasil disimpan');
+                refreshHistory();
+            });
+        }
+
+        function renderOperationalForm() {
+            const formHtml = `
+                <form id="operationalForm">
+                    <div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" value="${new Date().toISOString().slice(0,10)}" required></div>
+                    <div class="form-group"><label>Tipe</label>
+                        <select id="tipe">
+                            <option value="pengeluaran">Pengeluaran</option>
+                            <option value="pemasukan">Pemasukan</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="kategori" placeholder="Misal: Transport, Sewa, Gaji, dll" required></div>
+                    <div class="form-group"><label>Nominal (Rp)</label><input type="number" id="nominal" required></div>
+                    <div class="form-group"><label>Keterangan</label><textarea id="keterangan" rows="2" placeholder="Detail transaksi..."></textarea></div>
+                    <button type="submit" class="btn">Simpan</button>
+                </form>
+            `;
+            formContainer.innerHTML = formHtml;
+            document.getElementById('operationalForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const tanggal = document.getElementById('tanggal').value;
+                const tipe = document.getElementById('tipe').value;
+                const kategori = document.getElementById('kategori').value;
+                const nominal = parseFloat(document.getElementById('nominal').value);
+                const keterangan = document.getElementById('keterangan').value;
+                if (!kategori || !nominal) { alert('Isi kategori dan nominal!'); return; }
+                let cashflow = getCashflow(tengkulakId);
+                cashflow.push({
+                    id: Date.now(),
+                    tanggal,
+                    tipe,
+                    kategori,
+                    nominal,
+                    keterangan,
+                    fromCommodity: false
+                });
+                setCashflow(tengkulakId, cashflow);
+                alert('Transaksi operasional disimpan');
+                refreshHistory();
+            });
+        }
+
+        function refreshHistory() {
+            const transactions = getTransactions(tengkulakId);
+            const cashflow = getCashflow(tengkulakId);
+            const operationalEntries = cashflow.filter(cf => !cf.fromCommodity);
+            let allEntries = [...transactions, ...operationalEntries];
+            allEntries = allEntries.map(entry => {
+                let jenis = '', detail = '', jumlahKg = '', hargaPerKg = '', total = '', metode = '';
+                if (entry.tipe === 'pembelian' || entry.tipe === 'penjualan') {
+                    jenis = entry.tipe === 'pembelian' ? 'Pembelian' : 'Penjualan';
+                    const farmerName = entry.petani_id ? (getFarmers(tengkulakId).find(f=>f.id===entry.petani_id)?.nama || '-') : '';
+                    detail = `${entry.komoditas_nama} - ${entry.tipe === 'pembelian' ? farmerName : entry.buyer || 'Pedagang'}`;
+                    jumlahKg = `${entry.jumlah} kg`;
+                    hargaPerKg = new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(entry.harga_per_kg);
+                    total = new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(entry.total);
+                    metode = entry.metode_pembayaran;
+                } else {
+                    jenis = entry.tipe === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran';
+                    detail = entry.kategori;
+                    jumlahKg = '-';
+                    hargaPerKg = '-';
+                    total = new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(entry.nominal);
+                    metode = '-';
+                }
+                return { ...entry, jenis, detail, jumlahKg, hargaPerKg, total, metode };
+            });
+            const tanggalFilter = filterTanggal.value;
+            const jenisFilter = filterJenis.value;
+            let filtered = allEntries.filter(e => {
+                if (tanggalFilter && e.tanggal !== tanggalFilter) return false;
+                if (jenisFilter) {
+                    if (jenisFilter === 'pembelian' && e.tipe !== 'pembelian') return false;
+                    if (jenisFilter === 'penjualan' && e.tipe !== 'penjualan') return false;
+                    if (jenisFilter === 'operasional' && (e.tipe === 'pembelian' || e.tipe === 'penjualan')) return false;
+                }
+                return true;
+            });
+            filtered.sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = filtered.map(e => `
+                <tr>
+                    <td>${e.tanggal}</td>
+                    <td>${e.jenis}</td>
+                    <td>${e.detail}</td>
+                    <td>${e.jumlahKg}</td>
+                    <td>${e.hargaPerKg}</td>
+                    <td>${e.total}</td>
+                    <td>${e.metode}</td>
+                    <td>${e.keterangan || '-'}</td>
+                    <td>${e.tipe === 'pembelian' ? `<button class="btn btn-sm btn-secondary" onclick="printTransaksi(${e.id})">Cetak Nota</button>` : ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        function setActiveTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (tab === 'buy') buyBtn.classList.add('active');
+            else if (tab === 'sell') sellBtn.classList.add('active');
+            else opBtn.classList.add('active');
+            if (tab === 'buy') renderBuyForm();
+            else if (tab === 'sell') renderSellForm();
+            else renderOperationalForm();
+        }
+
+        buyBtn.addEventListener('click', () => setActiveTab('buy'));
+        sellBtn.addEventListener('click', () => setActiveTab('sell'));
+        opBtn.addEventListener('click', () => setActiveTab('operational'));
+        filterTanggal.addEventListener('input', refreshHistory);
+        filterJenis.addEventListener('change', refreshHistory);
+        setActiveTab('buy');
+        refreshHistory();
+        window.printTransaksi = (id) => {
+            const trans = getTransactions(tengkulakId).find(t => t.id === id);
+            if (trans) printNotaTengkulak(trans, tengkulakId);
+        };
+    }
+
+    function printNotaTengkulak(trans, tengkulakId) {
+        const profile = getTengkulakProfiles().find(p => p.id === tengkulakId);
+        const petani = getFarmers(tengkulakId).find(f => f.id === trans.petani_id);
+        const komoditas = getCommodities().find(c => c.id === trans.komoditas_id);
+        const notaHtml = `<div class="print-invoice" style="width:300px; margin:auto; font-family:monospace;"><h3>TaniTrade - Nota Pembelian</h3><p>Tengkulak: ${profile.nama}</p><p>Tanggal: ${trans.tanggal}</p><hr><p>Petani: ${petani ? petani.nama : '-'}</p><p>Komoditas: ${komoditas.nama}</p><p>Berat: ${trans.jumlah} kg</p><p>Harga/kg: ${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(trans.harga_per_kg)}</p><p>Total: ${new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(trans.total)}</p><p>Metode: ${trans.metode_pembayaran}</p>${trans.keterangan ? `<p>Keterangan: ${trans.keterangan}</p>` : ''}<hr><p>Terima kasih.</p></div>`;
+        const win = window.open();
+        win.document.write(notaHtml);
+        win.document.close();
+        win.print();
+    }
+
+    // ========== STOK KOMODITAS ==========
+    function renderTengkulakStock(tengkulakId) {
+        const commodities = getCommodities();
+        const stock = getStock(tengkulakId);
+        const labels = commodities.map(c => c.nama);
+        const data = labels.map(l => stock[commodities.find(c=>c.nama===l).id] || 0);
+        if (tengkulakCharts.stock) tengkulakCharts.stock.destroy();
+        const html = `
+            <h2>Stok Komoditas</h2>
+            <div class="card">
+                <div class="chart-container"><canvas id="stockChart"></canvas></div>
+                <div style="overflow-x:auto; margin-top:20px;">
+                    <table style="width:100%">
+                        <thead><tr><th>Komoditas</th><th>Stok (kg)</th></tr></thead>
+                        <tbody>${commodities.map(c => `<tr><td>${c.nama}</td><td>${stock[c.id] || 0} kg</td>`).join('')}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('content').innerHTML = html;
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        const colorPalette = getColorPalette(commodities.length);
+        tengkulakCharts.stock = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Stok (kg)', data, backgroundColor: colorPalette, borderColor: colorPalette, borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Stok (kg)' } }, x: { title: { display: true, text: 'Komoditas' } } } }
+        });
+    }
+
+    // ========== PETANI TENGKULAK ==========
+    function renderTengkulakFarmers(tengkulakId) {
+        const farmers = getFarmers(tengkulakId);
+        const html = `
+            <h2>Daftar Petani</h2>
+            <div class="search-bar"><input type="text" id="searchFarmer" placeholder="Cari nama atau HP..."></div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Nama</th><th>HP</th><th>Desa</th><th>Kecamatan</th><th>Komoditas Utama</th><th>Aksi</th></tr></thead>
+                    <tbody id="farmerTableBody">
+                        ${farmers.map(f => `
+                            <tr>
+                                <td>${f.nama}</td>
+                                <td>${f.hp}</td>
+                                <td>${f.desa || '-'}</td>
+                                <td>${f.kecamatan || '-'}</td>
+                                <td>${f.komoditas_utama || '-'}</td>
+                                <td><button class="btn btn-sm btn-secondary editFarmer" data-id="${f.id}">Edit</button> <button class="btn btn-sm btn-danger deleteFarmer" data-id="${f.id}">Hapus</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        document.getElementById('content').innerHTML = html;
+        const searchInput = document.getElementById('searchFarmer');
+        const filterFarmers = () => {
+            const keyword = searchInput.value.toLowerCase();
+            const filtered = farmers.filter(f => f.nama.toLowerCase().includes(keyword) || (f.hp && f.hp.includes(keyword)));
+            const tbody = document.getElementById('farmerTableBody');
+            tbody.innerHTML = filtered.map(f => `
+                <tr>
+                    <td>${f.nama}</td>
+                    <td>${f.hp}</td>
+                    <td>${f.desa || '-'}</td>
+                    <td>${f.kecamatan || '-'}</td>
+                    <td>${f.komoditas_utama || '-'}</td>
+                    <td><button class="btn btn-sm btn-secondary editFarmer" data-id="${f.id}">Edit</button> <button class="btn btn-sm btn-danger deleteFarmer" data-id="${f.id}">Hapus</button></td>
+                </tr>
+            `).join('');
+            attachHandlers();
+        };
+        const attachHandlers = () => {
+            document.querySelectorAll('.editFarmer').forEach(btn => btn.addEventListener('click', (e) => showTengkulakFarmerForm(tengkulakId, parseInt(btn.dataset.id))));
+            document.querySelectorAll('.deleteFarmer').forEach(btn => btn.addEventListener('click', (e) => {
+                if (confirm('Hapus petani ini? Data transaksi yang terkait akan tetap ada.')) {
+                    let newFarmers = farmers.filter(f => f.id !== parseInt(btn.dataset.id));
+                    setFarmers(tengkulakId, newFarmers);
+                    renderTengkulakFarmers(tengkulakId);
+                }
+            }));
+        };
+        searchInput.addEventListener('input', filterFarmers);
+        attachHandlers();
+    }
+
+    function showTengkulakFarmerForm(tengkulakId, id) {
+        const farmers = getFarmers(tengkulakId);
+        const farmer = farmers.find(f => f.id === id);
+        if (!farmer) return;
+        const modalContent = `
+            <h3>Edit Petani</h3>
+            <form id="farmerForm">
+                <div class="form-group"><label>Nama</label><input type="text" id="nama" value="${farmer.nama}" required></div>
+                <div class="form-group"><label>No HP</label><input type="text" id="hp" value="${farmer.hp || ''}"></div>
+                <div class="form-group"><label>Desa</label><input type="text" id="desa" value="${farmer.desa || ''}"></div>
+                <div class="form-group"><label>Kecamatan</label><input type="text" id="kecamatan" value="${farmer.kecamatan || ''}"></div>
+                <div class="form-group"><label>Komoditas Utama</label><select id="komoditas_utama">${getCommodities().map(c => `<option value="${c.nama}" ${farmer.komoditas_utama === c.nama ? 'selected' : ''}>${c.nama}</option>`).join('')}</select></div>
+                <button type="submit" class="btn">Simpan</button> <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
+            </form>
+        `;
+        showModal(modalContent);
+        document.getElementById('farmerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const updatedFarmer = { ...farmer, nama: document.getElementById('nama').value, hp: document.getElementById('hp').value, desa: document.getElementById('desa').value, kecamatan: document.getElementById('kecamatan').value, komoditas_utama: document.getElementById('komoditas_utama').value };
+            let newFarmers = farmers.map(f => f.id === id ? updatedFarmer : f);
+            setFarmers(tengkulakId, newFarmers);
+            closeModal();
+            renderTengkulakFarmers(tengkulakId);
+        });
+    }
+
+    // ========== LAPORAN KEUANGAN ==========
+    function generateFinancialReport(tengkulakId) {
+        const profile = getTengkulakProfiles().find(p => p.id === tengkulakId);
+        const settings = getTengkulakSettings(tengkulakId);
+        const transactions = getTransactions(tengkulakId);
+        const cashflow = getCashflow(tengkulakId);
+        const totalPenjualan = transactions.filter(t => t.tipe === 'penjualan').reduce((sum, t) => sum + t.total, 0);
+        const totalPembelian = transactions.filter(t => t.tipe === 'pembelian').reduce((sum, t) => sum + t.total, 0);
+        const biayaOperasional = cashflow.filter(cf => !cf.fromCommodity && cf.tipe === 'pengeluaran').reduce((sum, cf) => sum + cf.nominal, 0);
+        const labaBersih = totalPenjualan - totalPembelian - biayaOperasional;
+        const saldoKas = getBalance(tengkulakId);
+        const modalAwal = settings.modalAwal || 0;
+        const modalAkhir = saldoKas;
+        const profitStatus = labaBersih >= 0 ? "UNTUNG" : "RUGI";
+        const modalStatus = modalAkhir >= modalAwal ? "BERTAMBAH" : "BERKURANG";
+        let roi = 0, roiStatus = "";
+        if (modalAwal !== 0) {
+            roi = (labaBersih / modalAwal) * 100;
+            roiStatus = roi > 0 ? "PROFITABLE" : "NOT PROFITABLE";
+        } else { roiStatus = "N/A (Modal Awal 0)"; }
+        const totalQtyTerjual = transactions.filter(t => t.tipe === 'penjualan').reduce((sum, t) => sum + t.jumlah, 0);
+        const rataHargaJual = totalQtyTerjual > 0 ? totalPenjualan / totalQtyTerjual : 0;
+        const jumlahTransaksiMasuk = transactions.filter(t => t.tipe === 'pembelian').length;
+        const jumlahTransaksiKeluar = transactions.filter(t => t.tipe === 'penjualan').length;
+        const totalTransaksiKomoditas = jumlahTransaksiMasuk + jumlahTransaksiKeluar;
+        const rataProfitPerTransaksi = totalTransaksiKomoditas > 0 ? labaBersih / totalTransaksiKomoditas : 0;
+        const now = new Date();
+        const tanggalStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const waktuStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const formatRupiah = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+        return `
+            <div class="financial-report">
+                <h2>🏦 LAPORAN KEUANGAN USAHA</h2>
+                <h3>${profile.nama} - ${settings.namaToko || profile.perusahaan}</h3>
+                <p style="text-align:center;">Periode: Seluruh data hingga ${tanggalStr}</p>
+                <hr>
+                <div class="section"><h3>📊 INFORMASI MODAL USAHA</h3>
+                    <div class="row"><span>💰 Modal Awal</span><span>${formatRupiah(modalAwal)}</span><span></span></div>
+                    <div class="row"><span>📈 Total Penjualan</span><span>${formatRupiah(totalPenjualan)}</span><span></span></div>
+                    <div class="row"><span>📦 Total Pembelian</span><span>${formatRupiah(totalPembelian)}</span><span></span></div>
+                    <div class="row"><span>🚛 Biaya Operasional</span><span>${formatRupiah(biayaOperasional)}</span><span></span></div>
+                </div>
+                <div class="section profit-loss"><h3>🏆 PROFIT / LABA BERSIH</h3>
+                    <div class="row"><span>Laba Bersih</span><span>${formatRupiah(labaBersih)}</span><span class="status">${profitStatus}</span></div>
+                </div>
+                <div class="section"><h3>💵 MODAL AKHIR</h3>
+                    <div class="row"><span>Modal Akhir</span><span>${formatRupiah(modalAkhir)}</span><span class="status">${modalStatus}</span></div>
+                </div>
+                <div class="section"><h3>📊 RETURN OF INVESTMENT (ROI)</h3>
+                    <div class="row"><span>ROI</span><span>${roi.toFixed(2)}%</span><span class="status">⚠️ ${roiStatus}</span></div>
+                </div>
+                <div class="section"><h3>🌾 INFORMASI KOMODITAS (Semua Komoditas)</h3>
+                    <div class="row"><span>⚖️ Total Qty Terjual</span><span>${totalQtyTerjual.toLocaleString()} kg</span><span></span></div>
+                    <div class="row"><span>💹 Rata-rata Harga Jual</span><span>${formatRupiah(rataHargaJual)} / kg</span><span></span></div>
+                    <div class="row"><span>📊 Estimasi Pendapatan per kg</span><span>${formatRupiah(rataHargaJual)} / kg</span><span></span></div>
+                </div>
+                <div class="section"><h3>📌 STATISTIK TRANSAKSI</h3>
+                    <div class="row"><span>Total Transaksi Masuk (Pembelian)</span><span>${jumlahTransaksiMasuk} kali</span><span></span></div>
+                    <div class="row"><span>Total Transaksi Keluar (Penjualan)</span><span>${jumlahTransaksiKeluar} kali</span><span></span></div>
+                    <div class="row"><span>Rata-rata Profit per Transaksi</span><span>${formatRupiah(rataProfitPerTransaksi)}</span><span></span></div>
+                </div>
+                <hr>
+                <div class="footer">Dicetak dari TaniTrade - ${tanggalStr}, ${waktuStr}</div>
+            </div>
+        `;
+    }
+
+    function printFinancialReport(tengkulakId) {
+        const reportHtml = generateFinancialReport(tengkulakId);
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`<html><head><title>Laporan Keuangan TaniTrade</title></head><body style="font-family:'Courier New',monospace; margin:20px;">${reportHtml}</body></html>`);
+        printWindow.document.close();
+        printWindow.print();
+    }
+
+    function renderTengkulakReports(tengkulakId) {
+        const html = `<h2>Laporan</h2><div class="card"><button class="btn" id="printFinancialReportBtn">Cetak Laporan Keuangan</button><button class="btn btn-secondary" id="exportExcel">Export Excel</button></div>`;
+        document.getElementById('content').innerHTML = html;
+        document.getElementById('printFinancialReportBtn').onclick = () => printFinancialReport(tengkulakId);
+        document.getElementById('exportExcel').onclick = () => { const data = getTransactions(tengkulakId).map(t => ({ ...t, total: new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR'}).format(t.total) })); const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Transaksi'); XLSX.writeFile(wb, `transaksi_${new Date().toISOString().slice(0,10)}.xlsx`); };
+    }
+
+    // ========== PENGATURAN TENGKULAK ==========
+    function renderTengkulakSettings(tengkulakId) {
+        const settings = getTengkulakSettings(tengkulakId);
+        const profile = getTengkulakProfiles().find(p => p.id === tengkulakId);
+        const colorOptions = [
+            { name: "Hijau", code: "#14b8a6" },
+            { name: "Biru", code: "#3b82f6" },
+            { name: "Ungu", code: "#8b5cf6" },
+            { name: "Merah", code: "#ef4444" },
+            { name: "Orange", code: "#f97316" },
+            { name: "Kuning", code: "#eab308" },
+            { name: "Pink", code: "#ec489a" }
+        ];
+        const currentColor = settings.primaryColor || "#14b8a6";
+        const colorOptionsHtml = colorOptions.map(opt => `
+            <div class="color-option ${opt.code === currentColor ? 'active' : ''}" style="background-color: ${opt.code};" data-color="${opt.code}" title="${opt.name}"></div>
+        `).join('');
+        
+        const html = `
+            <h2>Pengaturan Usaha</h2>
+            <div class="card">
+                <h3>Penampilan & Profil</h3>
+                <form id="settingsForm">
+                    <div class="form-group">
+                        <label>Warna Utama</label>
+                        <div class="color-palette" id="colorPalette">
+                            ${colorOptionsHtml}
+                        </div>
+                        <small>Klik salah satu warna di atas untuk mengubah tema aplikasi.</small>
+                        <input type="hidden" id="primaryColor" value="${currentColor}">
+                    </div>
+                    <div class="form-group"><label>Nama Toko / Perusahaan</label><input type="text" id="namaToko" value="${settings.namaToko || profile?.perusahaan || ''}" placeholder="Contoh: PT Tani Jaya"></div>
+                    <div class="form-group"><label>Modal Awal Usaha (Rp)</label><input type="number" id="modalAwal" value="${settings.modalAwal || 0}" step="1000"><small>Digunakan untuk perhitungan laporan keuangan.</small></div>
+                    <div class="form-group"><label>Logo Usaha</label><input type="file" id="logoUpload" accept="image/*"><div id="logoPreview"></div>${settings.logoBase64 ? `<img src="${settings.logoBase64}" class="logo-preview" id="currentLogoPreview">` : '<p>Belum ada logo</p>'}<button type="button" id="removeLogoBtn" class="btn btn-sm btn-secondary" style="margin-top:8px;">Hapus Logo</button></div>
+                    <button type="submit" class="btn">Simpan Pengaturan</button>
+                </form>
+            </div>
+            <div class="card"><h3>Informasi Sistem</h3><p>ID Tengkulak: ${tengkulakId}</p><p>Username: ${currentUser.username}</p><button id="resetSettingsBtn" class="btn btn-danger">Reset ke Default</button></div>
+        `;
+        document.getElementById('content').innerHTML = html;
+        
+        const colorOptionsDiv = document.querySelectorAll('.color-option');
+        const primaryColorInput = document.getElementById('primaryColor');
+        colorOptionsDiv.forEach(opt => {
+            opt.addEventListener('click', () => {
+                const selectedColor = opt.getAttribute('data-color');
+                primaryColorInput.value = selectedColor;
+                colorOptionsDiv.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                const tempStyle = document.createElement('style');
+                tempStyle.id = `temp-style-${tengkulakId}`;
+                tempStyle.textContent = `
+                    .btn, .tab-btn.active, .avatar, .nav-menu li.active, .nav-menu li:hover { 
+                        background-color: ${selectedColor} !important; 
+                        color: #0f172a !important; 
+                        border-left-color: ${selectedColor} !important;
+                    }
+                    .btn, .tab-btn.active { border-color: ${selectedColor}; }
+                    .sidebar .nav-menu li.active, .sidebar .nav-menu li:hover { border-left-color: ${selectedColor} !important; }
+                `;
+                const oldTemp = document.getElementById(`temp-style-${tengkulakId}`);
+                if (oldTemp) oldTemp.remove();
+                document.head.appendChild(tempStyle);
+            });
+        });
+        
+        const logoInput = document.getElementById('logoUpload');
+        const previewDiv = document.getElementById('logoPreview');
+        logoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    img.className = 'logo-preview';
+                    img.style.maxWidth = '100px';
+                    previewDiv.innerHTML = '';
+                    previewDiv.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        document.getElementById('removeLogoBtn').addEventListener('click', () => {
+            const newSettings = { ...settings, logoBase64: null };
+            setTengkulakSettings(tengkulakId, newSettings);
+            renderTengkulakSettings(tengkulakId);
+            applyTengkulakSettings(tengkulakId);
+            alert('Logo dihapus');
+        });
+        document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newPrimary = document.getElementById('primaryColor').value;
+            const newNamaToko = document.getElementById('namaToko').value;
+            const newModalAwal = parseFloat(document.getElementById('modalAwal').value) || 0;
+            let logoBase64 = settings.logoBase64;
+            const file = document.getElementById('logoUpload').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    logoBase64 = ev.target.result;
+                    const updatedSettings = { primaryColor: newPrimary, namaToko: newNamaToko, modalAwal: newModalAwal, logoBase64 };
+                    setTengkulakSettings(tengkulakId, updatedSettings);
+                    const oldTemp = document.getElementById(`temp-style-${tengkulakId}`);
+                    if (oldTemp) oldTemp.remove();
+                    applyTengkulakSettings(tengkulakId);
+                    alert('Pengaturan berhasil disimpan!');
+                    renderTengkulakSettings(tengkulakId);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                const updatedSettings = { primaryColor: newPrimary, namaToko: newNamaToko, modalAwal: newModalAwal, logoBase64 };
+                setTengkulakSettings(tengkulakId, updatedSettings);
+                const oldTemp = document.getElementById(`temp-style-${tengkulakId}`);
+                if (oldTemp) oldTemp.remove();
+                applyTengkulakSettings(tengkulakId);
+                alert('Pengaturan berhasil disimpan!');
+                renderTengkulakSettings(tengkulakId);
+            }
+        });
+        document.getElementById('resetSettingsBtn').addEventListener('click', () => {
+            if (confirm('Reset semua pengaturan ke default? Warna akan kembali ke hijau, modal awal 0, logo dihapus.')) {
+                const defaultSettings = { primaryColor: "#14b8a6", modalAwal: 0, namaToko: profile?.perusahaan || "", logoBase64: null };
+                setTengkulakSettings(tengkulakId, defaultSettings);
+                const oldTemp = document.getElementById(`temp-style-${tengkulakId}`);
+                if (oldTemp) oldTemp.remove();
+                applyTengkulakSettings(tengkulakId);
+                renderTengkulakSettings(tengkulakId);
+                alert('Pengaturan direset.');
+            }
+        });
+    }
+
+    function showModal(html) {
+        let modal = document.getElementById('globalModal');
+        if (!modal) { modal = document.createElement('div'); modal.id = 'globalModal'; modal.className = 'modal'; modal.innerHTML = '<div class="modal-content" id="modalContent"></div>'; document.body.appendChild(modal); }
+        document.getElementById('modalContent').innerHTML = html;
+        modal.style.display = 'flex';
+    }
+    window.closeModal = function() { const modal = document.getElementById('globalModal'); if (modal) modal.style.display = 'none'; };
+
+    initGlobalData();
+    const storedUser = sessionStorage.getItem("currentUser");
+    if (storedUser) { currentUser = JSON.parse(storedUser); }
+    renderApp();
+</script>
+</body>
+</html>
