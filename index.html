@@ -152,6 +152,7 @@
         .menu-toggle-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #64748b; display: none; }
         .action-icons i { cursor: pointer; margin: 0 4px; font-size: 1rem; transition: transform 0.2s; padding: 5px; }
         .action-icons i:hover { transform: scale(1.1); }
+        .warning-box { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 12px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
         
         @media (max-width: 768px) { 
             .sidebar { transform: translateX(-100%); width: 260px; } 
@@ -230,7 +231,21 @@
             getSettings: (tid) => JSON.parse(localStorage.getItem(`settings_${tid}`)) || { primaryColor: "#14b8a6", modalAwal: 0, namaToko: "", logoBase64: null },
             setSettings: (tid, val) => localStorage.setItem(`settings_${tid}`, JSON.stringify(val)),
             getSystemConfig: () => JSON.parse(localStorage.getItem("system_config")) || { appName: APP_CONFIG.appName, apiUrl: "https://api.tanitrade.go.id" },
-            setSystemConfig: (config) => localStorage.setItem("system_config", JSON.stringify(config))
+            setSystemConfig: (config) => localStorage.setItem("system_config", JSON.stringify(config)),
+            clearAllData: () => {
+                localStorage.clear();
+                // Re-init default
+                Storage.setUsers(APP_CONFIG.defaultUsers);
+                Storage.setCommodities(APP_CONFIG.defaultCommodities);
+                Storage.setTengkulakProfiles(APP_CONFIG.defaultTengkulak);
+                Storage.setSystemConfig({ appName: APP_CONFIG.appName, apiUrl: "https://api.tanitrade.go.id" });
+                APP_CONFIG.defaultTengkulak.forEach(p => {
+                    Storage.setFarmers(p.id, []);
+                    Storage.setTransactions(p.id, []);
+                    Storage.setCashflow(p.id, []);
+                    Storage.setSettings(p.id, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: p.perusahaan, logoBase64: null });
+                });
+            }
         };
     })();
 
@@ -335,6 +350,10 @@
         return farmer ? farmer.nama : 'Petani Tidak Dikenal';
     }
 
+    function getFarmerTransactionCount(tid, farmerId) {
+        return Storage.getTransactions(tid).filter(t => t.petani_id == farmerId).length;
+    }
+
     // ==================== GLOBAL FUNCTIONS ====================
     window.deleteTransaction = function(tid, id, type) {
         if (!confirm('Hapus transaksi ini?')) return;
@@ -375,16 +394,32 @@
             const jumlahBaru = parseFloat(newJumlah);
             const hargaBaru = parseFloat(newHarga);
             if (isNaN(jumlahBaru) || isNaN(hargaBaru)) { alert('Input tidak valid.'); return; }
+            
+            // Validasi stok untuk penjualan
             if (trans.tipe === 'penjualan') {
-                const stockNow = getStock(tid)[trans.komoditas_id] + trans.jumlah;
-                if (stockNow < jumlahBaru) { alert('Stok tidak mencukupi!'); return; }
+                const currentStock = getStock(tid);
+                const oldJumlah = trans.jumlah;
+                const komoditasId = trans.komoditas_id;
+                // Stok yang tersedia jika transaksi ini dikembalikan dulu
+                const availableStock = currentStock[komoditasId] + oldJumlah;
+                if (availableStock < jumlahBaru) { 
+                    alert(`Stok tidak mencukupi! Stok tersedia: ${availableStock.toLocaleString()} kg`); 
+                    return; 
+                }
             }
+            
             trans.jumlah = jumlahBaru;
             trans.harga_per_kg = hargaBaru;
             trans.total = jumlahBaru * hargaBaru;
+            
+            // Update cashflow terkait
             let cashflows = Storage.getCashflow(tid);
             const cfIndex = cashflows.findIndex(cf => cf.id === trans.id);
-            if (cfIndex !== -1) cashflows[cfIndex].nominal = trans.total;
+            if (cfIndex !== -1) {
+                cashflows[cfIndex].nominal = trans.total;
+                // Update tipe cashflow sesuai tipe transaksi
+                cashflows[cfIndex].tipe = trans.tipe === 'pembelian' ? 'pengeluaran' : 'pemasukan';
+            }
             Storage.setCashflow(tid, cashflows);
             Storage.setTransactions(tid, transactions);
             alert('Transaksi diubah.');
@@ -392,11 +427,30 @@
             let cashflows = Storage.getCashflow(tid);
             const cf = cashflows.find(c => c.id === id);
             if (!cf) return;
+            
+            const newTanggal = prompt('Edit tanggal (YYYY-MM-DD):', cf.tanggal);
+            if (newTanggal === null) return;
+            
+            const newTipe = prompt('Edit tipe (pemasukan/pengeluaran):', cf.tipe);
+            if (newTipe === null) return;
+            if (newTipe !== 'pemasukan' && newTipe !== 'pengeluaran') {
+                alert('Tipe harus "pemasukan" atau "pengeluaran"');
+                return;
+            }
+            
+            const newKategori = prompt('Edit kategori:', cf.kategori || '');
+            if (newKategori === null) return;
+            
             const newNominal = prompt('Edit nominal (Rp):', cf.nominal);
             if (newNominal === null) return;
             const nominalBaru = parseFloat(newNominal);
             if (isNaN(nominalBaru)) { alert('Input tidak valid.'); return; }
+            
+            cf.tanggal = newTanggal;
+            cf.tipe = newTipe;
+            cf.kategori = newKategori;
             cf.nominal = nominalBaru;
+            
             Storage.setCashflow(tid, cashflows);
             alert('Transaksi diubah.');
         }
@@ -656,19 +710,47 @@
             let tengkulakId = null;
             if (role === 'tengkulak') {
                 tengkulakId = `TK${Math.floor(Math.random() * 10000)}`;
-                const newTengkulak = { id: tengkulakId, nama: username, perusahaan: username, hp: '', alamat: '', provinsi: '', kabupaten: '', kecamatan: '', desa: '', komoditasUtama: '', createdAt: new Date().toISOString() };
+                const namaPerusahaan = prompt("Nama Perusahaan/Usaha:", username);
+                const namaPemilik = prompt("Nama Pemilik:", username);
+                const hp = prompt("Nomor HP:", "");
+                const newTengkulak = { 
+                    id: tengkulakId, 
+                    nama: namaPemilik || username, 
+                    perusahaan: namaPerusahaan || username, 
+                    hp: hp || '', 
+                    alamat: '', 
+                    provinsi: '', 
+                    kabupaten: '', 
+                    kecamatan: '', 
+                    desa: '', 
+                    komoditasUtama: '', 
+                    createdAt: new Date().toISOString() 
+                };
                 Storage.setTengkulakProfiles([...Storage.getTengkulakProfiles(), newTengkulak]);
                 Storage.setFarmers(tengkulakId, []);
                 Storage.setTransactions(tengkulakId, []);
                 Storage.setCashflow(tengkulakId, []);
-                Storage.setSettings(tengkulakId, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: username, logoBase64: null });
+                Storage.setSettings(tengkulakId, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: namaPerusahaan || username, logoBase64: null });
             }
             Storage.setUsers([...Storage.getUsers(), { id: Date.now(), username, password, role, tengkulakId }]);
             alert('User ditambahkan!');
             renderUserManagement();
         });
     }
-    window.delUser = (id) => { if(confirm('Hapus user?')) { Storage.setUsers(Storage.getUsers().filter(u => u.id !== id)); renderUserManagement(); } };
+    window.delUser = (id) => { 
+        const user = Storage.getUsers().find(u => u.id === id);
+        if (user?.role === 'admin') {
+            const adminCount = Storage.getUsers().filter(u => u.role === 'admin').length;
+            if (adminCount <= 1) {
+                alert('Tidak dapat menghapus admin terakhir!');
+                return;
+            }
+        }
+        if(confirm('Hapus user?')) { 
+            Storage.setUsers(Storage.getUsers().filter(u => u.id !== id)); 
+            renderUserManagement(); 
+        } 
+    };
 
     function renderAdminReports() {
         document.getElementById('content').innerHTML = `<h2>📄 Laporan Nasional</h2><div class="card"><div style="display:flex; gap:10px; flex-wrap:wrap;"><button class="btn" id="exportExcelAll"><i class="fas fa-file-excel"></i> Export Excel</button><button class="btn btn-secondary" id="printReport"><i class="fas fa-print"></i> Cetak</button></div></div><div class="card"><h3>Ringkasan</h3><p>Total tengkulak: ${Storage.getTengkulakProfiles().length}</p><p>Total komoditas: ${Storage.getCommodities().length}</p></div>`;
@@ -678,10 +760,16 @@
 
     function renderAdminSettings() {
         const systemConfig = Storage.getSystemConfig();
-        const html = `<h2>⚙️ Pengaturan</h2><div class="card"><form id="systemConfigForm"><div class="form-group"><label>Nama Aplikasi</label><input type="text" id="appName" value="${systemConfig.appName}"></div><div class="form-group"><label>URL Server</label><input type="text" id="apiUrl" value="${systemConfig.apiUrl}"></div><button type="submit" class="btn">Simpan</button></form></div><div class="card"><div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Hapus semua data permanen</div><button class="btn btn-danger" id="resetAllDataBtn">Reset Data</button></div>`;
+        const html = `<h2>⚙️ Pengaturan</h2><div class="card"><form id="systemConfigForm"><div class="form-group"><label>Nama Aplikasi</label><input type="text" id="appName" value="${systemConfig.appName}"></div><div class="form-group"><label>URL Server</label><input type="text" id="apiUrl" value="${systemConfig.apiUrl}"></div><button type="submit" class="btn">Simpan</button></form></div><div class="card"><div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Hapus semua data permanen dan kembalikan ke pengaturan awal</div><button class="btn btn-danger" id="resetAllDataBtn"><i class="fas fa-trash-alt"></i> Reset Semua Data</button></div>`;
         document.getElementById('content').innerHTML = html;
         document.getElementById('systemConfigForm').addEventListener('submit', (e) => { e.preventDefault(); Storage.setSystemConfig({ appName: document.getElementById('appName').value, apiUrl: document.getElementById('apiUrl').value }); alert('Tersimpan!'); renderAdminSettings(); });
-        document.getElementById('resetAllDataBtn').onclick = () => { if(confirm('Reset semua data?')) { Storage.getTengkulakProfiles().forEach(p => { Storage.setFarmers(p.id, []); Storage.setTransactions(p.id, []); Storage.setCashflow(p.id, []); }); Storage.setCommodities([...APP_CONFIG.defaultCommodities]); alert('Data direset!'); location.reload(); } };
+        document.getElementById('resetAllDataBtn').onclick = () => { 
+            if(confirm('⚠️ PERINGATAN: Semua data akan dihapus dan dikembalikan ke pengaturan awal. Tindakan ini tidak dapat dibatalkan. Lanjutkan?')) { 
+                Storage.clearAllData();
+                alert('✅ Data berhasil direset! Silakan login kembali.');
+                logout();
+            } 
+        };
     }
 
     // =============== TENGKULAK MODULE ===============
@@ -779,14 +867,14 @@
             if (active==='buy') document.getElementById('transForm')?.addEventListener('submit', (e) => { e.preventDefault();
                 let petaniId = document.getElementById('petaniId').value;
                 let finalId = petaniId;
-                if (petaniId === 'NEW') { const newName = prompt("Nama Petani Baru"); if(newName) { const newFarmer = { id: Date.now(), nama: newName, hp: "", desa: "" }; Storage.setFarmers(tid, [...Storage.getFarmers(tid), newFarmer]); finalId = newFarmer.id; } else return; }
+                if (petaniId === 'NEW') { const newName = prompt("Nama Petani Baru"); if(newName) { const newFarmer = { id: Date.now(), nama: newName, hp: "", desa: "", kecamatan: "" }; Storage.setFarmers(tid, [...Storage.getFarmers(tid), newFarmer]); finalId = newFarmer.id; } else return; }
                 const komoditas_id = parseInt(document.getElementById('komoditasId').value);
                 const jumlah = parseFloat(document.getElementById('jumlah').value);
                 const harga = parseFloat(document.getElementById('harga').value);
                 const trans = { id: Date.now(), tanggal: document.getElementById('tanggal').value, tipe: 'pembelian', komoditas_id, komoditas_nama: Storage.getCommodities().find(c=>c.id===komoditas_id)?.nama, jumlah, harga_per_kg: harga, total: jumlah*harga, petani_id: finalId };
                 Storage.setTransactions(tid, [...Storage.getTransactions(tid), trans]);
                 const cash = Storage.getCashflow(tid);
-                cash.push({ id: trans.id, tanggal: trans.tanggal, tipe: 'pengeluaran', kategori: 'Pembelian', nominal: trans.total });
+                cash.push({ id: trans.id, tanggal: trans.tanggal, tipe: 'pengeluaran', kategori: 'Pembelian ' + trans.komoditas_nama, nominal: trans.total });
                 Storage.setCashflow(tid, cash);
                 alert("Tersimpan!");
                 renderTengTransactions(tid);
@@ -798,14 +886,16 @@
                 const trans = { id: Date.now(), tanggal: document.getElementById('tanggal').value, tipe: 'penjualan', komoditas_id: komId, komoditas_nama: Storage.getCommodities().find(c=>c.id===komId)?.nama, jumlah, harga_per_kg: parseFloat(document.getElementById('harga').value), total: jumlah * parseFloat(document.getElementById('harga').value) };
                 Storage.setTransactions(tid, [...Storage.getTransactions(tid), trans]);
                 const cash = Storage.getCashflow(tid);
-                cash.push({ id: trans.id, tanggal: trans.tanggal, tipe: 'pemasukan', kategori: 'Penjualan', nominal: trans.total });
+                cash.push({ id: trans.id, tanggal: trans.tanggal, tipe: 'pemasukan', kategori: 'Penjualan ' + trans.komoditas_nama, nominal: trans.total });
                 Storage.setCashflow(tid, cash);
                 alert("Tersimpan!");
                 renderTengTransactions(tid);
             });
             if (active==='op') document.getElementById('opForm')?.addEventListener('submit', (e) => { e.preventDefault();
                 const cash = Storage.getCashflow(tid);
-                cash.push({ id: Date.now(), tanggal: document.getElementById('tanggal').value, tipe: document.getElementById('tipe').value, kategori: document.getElementById('kategori').value, nominal: parseFloat(document.getElementById('nominal').value), fromCommodity: false });
+                const tipe = document.getElementById('tipe').value;
+                const kategori = document.getElementById('kategori').value || (tipe === 'pemasukan' ? 'Pemasukan Lain' : 'Pengeluaran Operasional');
+                cash.push({ id: Date.now(), tanggal: document.getElementById('tanggal').value, tipe: tipe, kategori: kategori, nominal: parseFloat(document.getElementById('nominal').value) });
                 Storage.setCashflow(tid, cash);
                 alert("Tersimpan!");
                 renderTengTransactions(tid);
@@ -813,17 +903,18 @@
         };
         document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); active = btn.dataset.tab; updateForm(); }));
         updateForm();
-        const allEntries = [...Storage.getTransactions(tid), ...Storage.getCashflow(tid)];
+        const allEntries = [...Storage.getTransactions(tid).map(t => ({...t, entryType: 'commodity'})), ...Storage.getCashflow(tid).map(c => ({...c, entryType: 'cashflow'}))];
         allEntries.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || ''));
         const farmersList = Storage.getFarmers(tid);
         const getFarmerNameById = (farmerId) => { const farmer = farmersList.find(f => f.id == farmerId); return farmer ? farmer.nama : null; };
         document.getElementById('historyList').innerHTML = `<div class="table-wrapper"><table class="data-table"><thead><th>Tanggal</th><th>Jenis</th><th>Detail</th><th>Nominal</th><th>Aksi</th></thead><tbody>${allEntries.slice(0,15).map(e => { 
-            const type = e.komoditas_id ? 'commodity' : 'cashflow';
+            const type = e.entryType;
             let detailText = '';
             if (e.tipe === 'pembelian' && e.petani_id) { const fn = getFarmerNameById(e.petani_id); detailText = fn ? `${fn} - ${e.komoditas_nama||''}` : (e.keterangan||e.komoditas_nama||'-'); }
-            else detailText = e.keterangan || e.komoditas_nama || (e.kategori||'-');
+            else detailText = e.keterangan || e.komoditas_nama || e.kategori || '-';
             if (e.tipe === 'penjualan') detailText = `${e.komoditas_nama||''} ${e.jumlah?e.jumlah+'kg':''}`;
-            return `<tr><td>${e.tanggal||'-'}</td><td><span class="badge">${e.tipe||(e.kategori||'Trans')}</span></td><td>${detailText}</td><td><strong>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(e.total||e.nominal||0)}</strong></td><td class="action-icons"><i class="fas fa-edit" onclick="editTransaction('${tid}', ${e.id}, '${type}')"></i><i class="fas fa-trash-alt" onclick="deleteTransaction('${tid}', ${e.id}, '${type}')"></i><i class="fas fa-receipt" onclick="printBill(${JSON.stringify(e).replace(/"/g, '&quot;')}, '${tid}')"></i></td></tr>`;
+            if (e.tipe === 'pemasukan' || e.tipe === 'pengeluaran') detailText = e.kategori || '-';
+            return `<tr><td>${e.tanggal||'-'}</td><td><span class="badge">${e.tipe || 'Trans'}</span></td><td>${detailText}</td><td><strong>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(e.total||e.nominal||0)}</strong></td><td class="action-icons"><i class="fas fa-edit" onclick="editTransaction('${tid}', ${e.id}, '${type}')"></i><i class="fas fa-trash-alt" onclick="deleteTransaction('${tid}', ${e.id}, '${type}')"></i><i class="fas fa-receipt" onclick="printBill(${JSON.stringify(e).replace(/"/g, '&quot;')}, '${tid}')"></i></td></tr>`;
         }).join('')}${allEntries.length === 0 ? '<tr><td colspan="5" style="text-align:center;">Belum ada transaksi</td></tr>' : ''}</tbody></table></div>`;
     }
 
@@ -921,7 +1012,7 @@
                                 <td>
                                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
                                         <button class="btn btn-sm btn-secondary" onclick="showEditFarmerModal('${tid}', ${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i> Edit</button>
-                                        <button class="btn btn-sm btn-danger" onclick="deleteFarmer(${f.id})"><i class="fas fa-trash"></i> Hapus</button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteFarmer('${tid}', ${f.id})"><i class="fas fa-trash"></i> Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -937,15 +1028,23 @@
         document.getElementById('addFarmerBtn').onclick = () => { 
             const name = prompt("Nama Petani"); 
             if(name) { 
-                Storage.setFarmers(tid, [...Storage.getFarmers(tid), { id: Date.now(), nama: name, hp: "", desa: "", kecamatan: "" }]); 
+                const hp = prompt("Nomor HP (opsional):", "");
+                const desa = prompt("Desa (opsional):", "");
+                const kecamatan = prompt("Kecamatan (opsional):", "");
+                Storage.setFarmers(tid, [...Storage.getFarmers(tid), { id: Date.now(), nama: name, hp: hp || "", desa: desa || "", kecamatan: kecamatan || "" }]); 
                 renderTengFarmers(tid); 
             } 
         };
         
-        window.deleteFarmer = (id) => { 
-            if(confirm('Hapus petani ini?')) { 
-                Storage.setFarmers(tid, Storage.getFarmers(tid).filter(f => f.id !== id)); 
-                renderTengFarmers(tid); 
+        window.deleteFarmer = (tidParam, id) => { 
+            const transactionCount = getFarmerTransactionCount(tidParam, id);
+            let confirmMsg = 'Hapus petani ini?';
+            if (transactionCount > 0) {
+                confirmMsg = `Petani ini memiliki ${transactionCount} riwayat transaksi. Menghapus petani akan membuat riwayat transaksi menampilkan "Petani Tidak Dikenal". Yakin ingin menghapus?`;
+            }
+            if(confirm(confirmMsg)) { 
+                Storage.setFarmers(tidParam, Storage.getFarmers(tidParam).filter(f => f.id !== id)); 
+                renderTengFarmers(tidParam); 
             } 
         };
         
@@ -961,7 +1060,7 @@
                     <td>
                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
                             <button class="btn btn-sm btn-secondary" onclick="showEditFarmerModal('${tid}', ${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteFarmer(${f.id})"><i class="fas fa-trash"></i> Hapus</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteFarmer('${tid}', ${f.id})"><i class="fas fa-trash"></i> Hapus</button>
                         </div>
                     </td>
                 </tr>
@@ -975,13 +1074,19 @@
         const cash = Storage.getCashflow(tid);
         const totalJual = trans.filter(t=>t.tipe==='penjualan').reduce((s,t)=>s+t.total,0);
         const totalBeli = trans.filter(t=>t.tipe==='pembelian').reduce((s,t)=>s+t.total,0);
-        const op = cash.filter(c=>!c.fromCommodity && c.tipe==='pengeluaran').reduce((s,c)=>s+c.nominal,0);
+        const op = cash.filter(c=>c.tipe==='pengeluaran').reduce((s,c)=>s+c.nominal,0);
         const laba = totalJual - totalBeli - op;
         const formatRp = (v)=> new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(v);
-        const html = `<h2>📊 Laporan</h2><div class="card"><div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;"><button class="btn" id="printReportBtn">Cetak</button><button class="btn btn-secondary" id="exportExcelTeng">Export Excel</button></div><div class="financial-report"><h3 style="text-align:center;">${profile.nama}</h3><p style="text-align:center;">${profile.perusahaan||''}</p><hr><div style="display:flex; justify-content:space-between;"><strong>Penjualan:</strong> ${formatRp(totalJual)}</div><div style="display:flex; justify-content:space-between;"><strong>Pembelian:</strong> ${formatRp(totalBeli)}</div><div style="display:flex; justify-content:space-between;"><strong>Operasional:</strong> ${formatRp(op)}</div><hr><div style="display:flex; justify-content:space-between; background:#f0fdf4; padding:10px; border-radius:10px;"><strong>Laba Bersih:</strong> <strong class="${laba>=0?'text-success':'text-danger'}">${formatRp(laba)}</strong></div><div style="display:flex; justify-content:space-between;"><strong>Saldo Kas:</strong> ${formatRp(getBalance(tid))}</div></div></div>`;
+        const html = `<h2>📊 Laporan</h2><div class="card"><div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;"><button class="btn" id="printReportBtn"><i class="fas fa-print"></i> Cetak</button><button class="btn btn-secondary" id="exportExcelTeng"><i class="fas fa-file-excel"></i> Export Excel</button></div><div class="financial-report"><h3 style="text-align:center;">${profile.nama}</h3><p style="text-align:center;">${profile.perusahaan||''}</p><hr><div style="display:flex; justify-content:space-between;"><strong>Penjualan:</strong> ${formatRp(totalJual)}</div><div style="display:flex; justify-content:space-between;"><strong>Pembelian:</strong> ${formatRp(totalBeli)}</div><div style="display:flex; justify-content:space-between;"><strong>Operasional:</strong> ${formatRp(op)}</div><hr><div style="display:flex; justify-content:space-between; background:#f0fdf4; padding:10px; border-radius:10px;"><strong>Laba Bersih:</strong> <strong class="${laba>=0?'text-success':'text-danger'}">${formatRp(laba)}</strong></div><div style="display:flex; justify-content:space-between;"><strong>Saldo Kas:</strong> ${formatRp(getBalance(tid))}</div></div></div>`;
         document.getElementById('content').innerHTML = html;
         document.getElementById('printReportBtn').onclick = () => window.print();
-        document.getElementById('exportExcelTeng').onclick = () => { const ws = XLSX.utils.json_to_sheet(trans); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Transaksi'); XLSX.writeFile(wb, `transaksi_${tid}_${new Date().toISOString().slice(0,10)}.xlsx`); };
+        document.getElementById('exportExcelTeng').onclick = () => { 
+            const allData = [...trans, ...cash.map(c => ({...c, tipe_transaksi: c.tipe}))];
+            const ws = XLSX.utils.json_to_sheet(allData); 
+            const wb = XLSX.utils.book_new(); 
+            XLSX.utils.book_append_sheet(wb, ws, 'Transaksi'); 
+            XLSX.writeFile(wb, `transaksi_${tid}_${new Date().toISOString().slice(0,10)}.xlsx`); 
+        };
     }
 
     function renderTengSettings(tid) {
@@ -989,15 +1094,57 @@
         const profile = Storage.getTengkulakProfiles().find(p=>p.id===tid);
         const html = `<h2>⚙️ Pengaturan</h2><div class="card"><form id="setForm"><div class="form-group"><label>🎨 Warna Utama</label><input type="color" id="primaryColor" value="${s.primaryColor}" style="width:70px; height:40px;"></div><div class="form-group"><label>🏪 Nama Toko</label><input type="text" id="namaToko" value="${s.namaToko || profile?.perusahaan || ''}"></div><div class="form-group"><label>💰 Modal Awal</label><input type="number" id="modalAwal" value="${s.modalAwal || 0}" step="100000"></div><div class="form-group"><label>🖼️ Logo</label><input type="file" id="logoUpload" accept="image/*">${s.logoBase64 ? `<img src="${s.logoBase64}" class="logo-preview">` : '<p class="badge">Belum ada logo</p>'}</div><button type="submit" class="btn">Simpan</button><button type="button" id="resetSettingsBtn" class="btn btn-secondary" style="margin-left:10px;">Reset</button></form></div>`;
         document.getElementById('content').innerHTML = html;
-        document.getElementById('setForm').addEventListener('submit', (e) => { e.preventDefault(); Storage.setSettings(tid, { primaryColor: document.getElementById('primaryColor').value, namaToko: document.getElementById('namaToko').value, modalAwal: parseFloat(document.getElementById('modalAwal').value) || 0, logoBase64: s.logoBase64 }); alert("Tersimpan!"); renderTengSettings(tid); });
-        document.getElementById('resetSettingsBtn').onclick = () => { if(confirm('Reset?')) { Storage.setSettings(tid, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: profile?.perusahaan || "", logoBase64: null }); renderTengSettings(tid); alert("Reset berhasil"); } };
-        document.getElementById('logoUpload').onchange = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = (ev) => { Storage.setSettings(tid, { ...Storage.getSettings(tid), logoBase64: ev.target.result }); renderTengSettings(tid); }; reader.readAsDataURL(file); } };
+        document.getElementById('setForm').addEventListener('submit', (e) => { e.preventDefault(); 
+            const newSettings = {
+                primaryColor: document.getElementById('primaryColor').value,
+                namaToko: document.getElementById('namaToko').value,
+                modalAwal: parseFloat(document.getElementById('modalAwal').value) || 0,
+                logoBase64: s.logoBase64
+            };
+            Storage.setSettings(tid, newSettings); 
+            alert("Tersimpan!"); 
+            renderTengSettings(tid); 
+        });
+        document.getElementById('resetSettingsBtn').onclick = () => { 
+            if(confirm('Reset pengaturan ke default?')) { 
+                Storage.setSettings(tid, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: profile?.perusahaan || "", logoBase64: null }); 
+                renderTengSettings(tid); 
+                alert("Reset berhasil"); 
+            } 
+        };
+        document.getElementById('logoUpload').onchange = (e) => { 
+            const file = e.target.files[0]; 
+            if(file) { 
+                const reader = new FileReader(); 
+                reader.onload = (ev) => { 
+                    const currentSettings = Storage.getSettings(tid);
+                    Storage.setSettings(tid, { ...currentSettings, logoBase64: ev.target.result }); 
+                    renderTengSettings(tid); 
+                }; 
+                reader.readAsDataURL(file); 
+            } 
+        };
     }
 
     // ==================== START ====================
     const storedUser = sessionStorage.getItem("currentUser");
     if (storedUser) currentUser = JSON.parse(storedUser);
     renderApp();
+    
+    // Expose functions to window for HTML onclick handlers
+    window.showEditFarmerModal = showEditFarmerModal;
+    window.closeFarmerModal = closeFarmerModal;
+    window.saveFarmerEdit = saveFarmerEdit;
+    window.editComm = (id) => { 
+        const comms = Storage.getCommodities(); 
+        const item = comms.find(c=>c.id===id); 
+        const newPrice = prompt("Harga acuan baru (Rp)", item.harga_acuan); 
+        if(newPrice) { 
+            item.harga_acuan = parseFloat(newPrice); 
+            Storage.setCommodities(comms); 
+            if (currentUser?.role === 'admin') renderAdminCommodities(); 
+        } 
+    };
 </script>
 </body>
 </html>
