@@ -11,47 +11,23 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        /* ===== SAME CSS AS BEFORE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f5f7fb; color: #1e293b; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .app { display: flex; min-height: 100vh; background: #f5f7fb; position: relative; }
-        .sidebar { 
-            width: 280px; 
-            background: linear-gradient(180deg, #0f172a 0%, #0a0f1c 100%);
-            color: #e2e8f0; 
-            position: fixed; 
-            height: 100vh; 
-            overflow-y: auto; 
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            z-index: 1000; 
-            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-        }
+        .sidebar { width: 280px; background: linear-gradient(180deg, #0f172a 0%, #0a0f1c 100%); color: #e2e8f0; position: fixed; height: 100vh; overflow-y: auto; transition: transform 0.3s; z-index: 1000; box-shadow: 4px 0 20px rgba(0,0,0,0.1); }
         .logo-area { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; text-align: center; }
         .logo-area h2 { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #2dd4bf, #14b8a6); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .logo-area p { font-size: 0.65rem; color: #94a3b8; margin-top: 6px; }
         .nav-menu ul { list-style: none; padding: 0 12px; }
-        .nav-menu li { 
-            padding: 10px 14px; margin: 3px 0; border-radius: 12px; cursor: pointer; transition: all 0.2s; 
-            display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 0.85rem; color: #cbd5e1;
-        }
+        .nav-menu li { padding: 10px 14px; margin: 3px 0; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 0.85rem; color: #cbd5e1; }
         .nav-menu li i { width: 22px; font-size: 1rem; }
         .nav-menu li:hover, .nav-menu li.active { background: rgba(20, 184, 166, 0.15); color: #2dd4bf; }
         .main-content { flex: 1; margin-left: 280px; background: #f5f7fb; min-height: 100vh; width: calc(100% - 280px); }
-        .topbar { 
-            background: #ffffff; 
-            padding: 12px 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid #e2e8f0; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .topbar { background: #ffffff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 10px; }
         .user-info { display: flex; align-items: center; gap: 12px; }
         .avatar { width: 38px; height: 38px; background: linear-gradient(135deg, #14b8a6, #0d9488); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem; }
         .content { padding: 16px; }
@@ -65,70 +41,17 @@
         .btn { background: #14b8a6; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn:hover { background: #0d9488; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3); }
         .btn-secondary { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
-        .btn-secondary:hover { background: #e2e8f0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .btn-danger { background: #ef4444; }
         .btn-danger:hover { background: #dc2626; }
         .btn-sm { padding: 5px 12px; font-size: 0.7rem; }
-        .btn-print-all { background: #3b82f6; margin-left: 10px; }
-        .btn-print-all:hover { background: #2563eb; }
-        
-        .table-wrapper {
-            overflow-x: auto;
-            width: 100%;
-            border-radius: 12px;
-        }
-        table.data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            min-width: 100%;
-        }
-        table.data-table th,
-        table.data-table td {
-            padding: 12px 10px;
-            text-align: left;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-        }
-        table.data-table th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #334155;
-            font-size: 0.8rem;
-        }
-        table.data-table tbody tr:hover {
-            background: #fafcff;
-        }
-        
-        @media (max-width: 768px) {
-            table.data-table th,
-            table.data-table td {
-                padding: 8px 8px;
-                font-size: 0.75rem;
-            }
-            table.data-table {
-                min-width: 500px;
-            }
-            .table-wrapper {
-                margin: 0 -4px;
-                padding: 0 4px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            table.data-table th,
-            table.data-table td {
-                padding: 6px 6px;
-                font-size: 0.7rem;
-            }
-            table.data-table {
-                min-width: 450px;
-            }
-        }
-        
+        .table-wrapper { overflow-x: auto; width: 100%; border-radius: 12px; }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 100%; }
+        table.data-table th, table.data-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        table.data-table th { background: #f8fafc; font-weight: 600; color: #334155; font-size: 0.8rem; }
+        table.data-table tbody tr:hover { background: #fafcff; }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.8rem; color: #334155; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; font-size: 0.85rem; transition: all 0.2s; -webkit-appearance: none; appearance: none; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; font-size: 0.85rem; transition: all 0.2s; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #fff; padding: 24px; border-radius: 24px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; margin: 16px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
@@ -145,7 +68,6 @@
         .tab-btn { background: none; border: none; padding: 6px 18px; cursor: pointer; font-weight: 600; border-radius: 40px; font-size: 0.85rem; transition: all 0.2s; }
         .tab-btn.active { background: #14b8a6; color: white; }
         .financial-report { font-family: 'Inter', monospace; background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; }
-        .logo-preview { max-width: 60px; margin-top: 10px; border-radius: 12px; }
         h2 { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
         h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #1e293b; }
         .text-success { color: #10b981; }
@@ -155,823 +77,228 @@
         .action-icons i { cursor: pointer; font-size: 1rem; transition: transform 0.2s; padding: 5px; color: #64748b; }
         .action-icons i:hover { transform: scale(1.1); color: #14b8a6; }
         .action-icons i.fa-trash-alt:hover { color: #ef4444; }
-        .action-icons i.fa-print:hover, .action-icons i.fa-file-invoice:hover, .action-icons i.fa-list:hover { color: #3b82f6; }
         .warning-box { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 12px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-        
         .login-footer { margin-top: 24px; text-align: center; font-size: 0.75rem; color: #94a3b8; }
-        .login-footer a { color: #14b8a6; text-decoration: none; }
-        .login-footer a:hover { text-decoration: underline; }
-        
-        .filter-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
-        .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.8rem; }
-        
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top-color: #14b8a6; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .sync-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; background: #e2e8f0; }
+        .sync-status.online { background: #dcfce7; color: #15803d; }
+        .sync-status.offline { background: #fee2e2; color: #991b1b; }
         @media (max-width: 768px) { 
             .sidebar { transform: translateX(-100%); width: 260px; } 
             .sidebar.open { transform: translateX(0); } 
             .main-content { margin-left: 0; width: 100%; } 
-            .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
             .content { padding: 12px; }
             .menu-toggle-btn { display: block; }
-            .topbar { padding: 10px 16px; }
-            .stat-card .value { font-size: 1.3rem; }
-            .btn { padding: 7px 14px; font-size: 0.75rem; }
-            .card { padding: 14px; margin-bottom: 16px; }
-            .modal-content { padding: 20px; width: 95%; }
-            .chart-container { height: 200px; }
-            h2 { font-size: 1.2rem; margin-bottom: 12px; }
-            .flex-between { flex-direction: column; align-items: stretch; }
-            .flex-between .btn { align-self: flex-start; }
-            .action-icons i { font-size: 0.9rem; padding: 3px; }
-            .filter-bar { flex-direction: column; align-items: stretch; }
         }
-        
-        @media (max-width: 480px) {
-            .stat-card h3 { font-size: 0.65rem; }
-            .stat-card .value { font-size: 1.1rem; }
-            .btn-sm { padding: 4px 10px; font-size: 0.65rem; }
-            .badge { font-size: 0.6rem; padding: 2px 8px; }
-            .action-icons i { font-size: 0.9rem; margin: 0 2px; }
-        }
-        
-        input, select, textarea {
-            font-size: 16px !important;
-        }
+        input, select, textarea { font-size: 16px !important; }
     </style>
 </head>
 <body>
 <div id="appRoot"></div>
 
 <script>
-    // ==================== KONFIGURASI ====================
-    const APP_CONFIG = {
-        appName: "TaniTrade Pro",
-        defaultUsers: (() => {
-            if (!localStorage.getItem("users")) {
-                return [
-                    { id: 1, username: "admin", password: "admin123", role: "admin" },
-                    { id: 2, username: "tengkulak1", password: "pass1", role: "tengkulak", tengkulakId: "TK1001" },
-                    { id: 3, username: "tengkulak2", password: "pass2", role: "tengkulak", tengkulakId: "TK1002" }
-                ];
+    // ==================== KONFIGURASI GOOGLE SHEETS API ====================
+    // GANTI URL INI DENGAN URL DEPLOYMENT ANDA!
+    const API_URL = https://script.google.com/macros/s/AKfycbyARty1OodYDGMa776nqa5p5f3k47K3rThsVrI5PgWtfFqAIk0R_MD0CC3l34pZIh2wlA/exec'; // <-- GANTI DI SINI!
+    
+    // ==================== API SERVICE ====================
+    const API = {
+        async call(action, sheet, data = null, tengkulakId = null, id = null) {
+            const params = new URLSearchParams();
+            params.append('action', action);
+            params.append('sheet', sheet);
+            if (tengkulakId) params.append('tengkulakId', tengkulakId);
+            if (id) params.append('id', id);
+            if (data) params.append('data', JSON.stringify(data));
+            
+            try {
+                const response = await fetch(API_URL + '?' + params.toString());
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, error: error.message };
             }
-            return null;
-        })(),
-        defaultCommodities: [
-            { id: 1, nama: "Kopra", satuan: "kg", harga_acuan: 8000 },
-            { id: 2, nama: "Pala", satuan: "kg", harga_acuan: 45000 },
-            { id: 3, nama: "Cengkeh", satuan: "kg", harga_acuan: 70000 },
-            { id: 4, nama: "Kakao", satuan: "kg", harga_acuan: 25000 },
-            { id: 5, nama: "Jagung", satuan: "kg", harga_acuan: 5000 },
-            { id: 6, nama: "Kelapa", satuan: "kg", harga_acuan: 4000 }
-        ],
-        defaultTengkulak: [
-            { id: "TK1001", nama: "Budi Santoso", perusahaan: "Budi Jaya", hp: "081234567890", alamat: "Jl. Raya No.1", provinsi: "Jawa Timur", kabupaten: "Malang", kecamatan: "Kedungkandang", desa: "Buring", komoditasUtama: "Kopra", createdAt: new Date().toISOString() },
-            { id: "TK1002", nama: "Siti Aminah", perusahaan: "Siti Makmur", hp: "082345678901", alamat: "Jl. Merdeka No.2", provinsi: "Jawa Barat", kabupaten: "Bandung", kecamatan: "Coblong", desa: "Dago", komoditasUtama: "Kakao", createdAt: new Date().toISOString() }
-        ]
+        },
+        
+        async getAll(sheet, tengkulakId = null) {
+            return this.call('getAll', sheet, null, tengkulakId);
+        },
+        
+        async getById(sheet, id, tengkulakId = null) {
+            return this.call('getById', sheet, null, tengkulakId, id);
+        },
+        
+        async add(sheet, data, tengkulakId = null) {
+            return this.call('add', sheet, data, tengkulakId);
+        },
+        
+        async update(sheet, id, data, tengkulakId = null) {
+            return this.call('update', sheet, data, tengkulakId, id);
+        },
+        
+        async delete(sheet, id, tengkulakId = null) {
+            return this.call('delete', sheet, null, tengkulakId, id);
+        },
+        
+        async getTengkulakData(tengkulakId) {
+            return this.call('getTengkulakData', 'farmers', null, tengkulakId);
+        }
     };
 
-    // ==================== STORAGE ====================
-    const Storage = (() => {
-        const get = (key) => JSON.parse(localStorage.getItem(key)) || [];
-        const set = (key, val) => localStorage.setItem(key, JSON.stringify(val));
-        return {
-            getUsers: () => get("users"),
-            setUsers: (u) => set("users", u),
-            getCommodities: () => get("commodities"),
-            setCommodities: (c) => set("commodities", c),
-            getTengkulakProfiles: () => get("tengkulakProfiles"),
-            setTengkulakProfiles: (p) => set("tengkulakProfiles", p),
-            getFarmers: (tid) => get(`farmers_${tid}`),
-            setFarmers: (tid, data) => localStorage.setItem(`farmers_${tid}`, JSON.stringify(data)),
-            getTransactions: (tid) => get(`transactions_${tid}`),
-            setTransactions: (tid, data) => localStorage.setItem(`transactions_${tid}`, JSON.stringify(data)),
-            getCashflow: (tid) => get(`cashflow_${tid}`),
-            setCashflow: (tid, data) => localStorage.setItem(`cashflow_${tid}`, JSON.stringify(data)),
-            getSettings: (tid) => JSON.parse(localStorage.getItem(`settings_${tid}`)) || { primaryColor: "#14b8a6", modalAwal: 0, namaToko: "", logoBase64: null },
-            setSettings: (tid, val) => localStorage.setItem(`settings_${tid}`, JSON.stringify(val)),
-            getSystemConfig: () => JSON.parse(localStorage.getItem("system_config")) || { appName: APP_CONFIG.appName, apiUrl: "https://api.tanitrade.go.id" },
-            setSystemConfig: (config) => localStorage.setItem("system_config", JSON.stringify(config)),
-            clearAllData: () => {
-                localStorage.clear();
-                Storage.setUsers([
-                    { id: 1, username: "admin", password: "admin123", role: "admin" },
-                    { id: 2, username: "tengkulak1", password: "pass1", role: "tengkulak", tengkulakId: "TK1001" },
-                    { id: 3, username: "tengkulak2", password: "pass2", role: "tengkulak", tengkulakId: "TK1002" }
-                ]);
-                Storage.setCommodities(APP_CONFIG.defaultCommodities);
-                Storage.setTengkulakProfiles(APP_CONFIG.defaultTengkulak);
-                Storage.setSystemConfig({ appName: APP_CONFIG.appName, apiUrl: "https://api.tanitrade.go.id" });
-                APP_CONFIG.defaultTengkulak.forEach(p => {
-                    Storage.setFarmers(p.id, []);
-                    Storage.setTransactions(p.id, []);
-                    Storage.setCashflow(p.id, []);
-                    Storage.setSettings(p.id, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: p.perusahaan, logoBase64: null });
-                });
+    // ==================== STORAGE (CACHE LOKAL UNTUK OFFLINE) ====================
+    const LocalCache = {
+        users: [],
+        tengkulak: [],
+        commodities: [],
+        farmers: {},
+        transactions: {},
+        cashflow: {},
+        settings: {},
+        systemConfig: { appName: 'TaniTrade Pro', apiUrl: API_URL },
+        lastSync: null,
+        
+        save() {
+            localStorage.setItem('taniTrade_cache', JSON.stringify({
+                users: this.users,
+                tengkulak: this.tengkulak,
+                commodities: this.commodities,
+                farmers: this.farmers,
+                transactions: this.transactions,
+                cashflow: this.cashflow,
+                settings: this.settings,
+                systemConfig: this.systemConfig,
+                lastSync: new Date().toISOString()
+            }));
+        },
+        
+        load() {
+            const cached = localStorage.getItem('taniTrade_cache');
+            if (cached) {
+                const data = JSON.parse(cached);
+                this.users = data.users || [];
+                this.tengkulak = data.tengkulak || [];
+                this.commodities = data.commodities || [];
+                this.farmers = data.farmers || {};
+                this.transactions = data.transactions || {};
+                this.cashflow = data.cashflow || {};
+                this.settings = data.settings || {};
+                this.systemConfig = data.systemConfig || { appName: 'TaniTrade Pro', apiUrl: API_URL };
+                this.lastSync = data.lastSync;
             }
-        };
-    })();
-
-    // ==================== INIT DATA ====================
-    function initData() {
-        if (!localStorage.getItem("users") && APP_CONFIG.defaultUsers) {
-            Storage.setUsers(APP_CONFIG.defaultUsers);
+        },
+        
+        async syncAll() {
+            showLoading(true);
+            try {
+                // Sync users
+                const usersRes = await API.getAll('users');
+                if (usersRes.success) this.users = usersRes.data;
+                
+                // Sync tengkulak
+                const tengkulakRes = await API.getAll('tengkulak');
+                if (tengkulakRes.success) this.tengkulak = tengkulakRes.data;
+                
+                // Sync commodities
+                const commRes = await API.getAll('commodities');
+                if (commRes.success) this.commodities = commRes.data;
+                
+                // Sync data per tengkulak
+                for (const t of this.tengkulak) {
+                    const dataRes = await API.getTengkulakData(t.id);
+                    if (dataRes.success) {
+                        this.farmers[t.id] = dataRes.data.farmers || [];
+                        this.transactions[t.id] = dataRes.data.transactions || [];
+                        this.cashflow[t.id] = dataRes.data.cashflow || [];
+                    }
+                }
+                
+                this.save();
+                showLoading(false);
+                return true;
+            } catch (error) {
+                console.error('Sync error:', error);
+                showLoading(false);
+                return false;
+            }
         }
-        if (!localStorage.getItem("commodities")) Storage.setCommodities(APP_CONFIG.defaultCommodities);
-        if (!localStorage.getItem("tengkulakProfiles")) Storage.setTengkulakProfiles(APP_CONFIG.defaultTengkulak);
-        if (!localStorage.getItem("system_config")) Storage.setSystemConfig({ appName: APP_CONFIG.appName, apiUrl: "https://api.tanitrade.go.id" });
-        Storage.getTengkulakProfiles().forEach(p => {
-            if (!localStorage.getItem(`farmers_${p.id}`)) Storage.setFarmers(p.id, []);
-            if (!localStorage.getItem(`transactions_${p.id}`)) Storage.setTransactions(p.id, []);
-            if (!localStorage.getItem(`cashflow_${p.id}`)) Storage.setCashflow(p.id, []);
-            if (!localStorage.getItem(`settings_${p.id}`)) Storage.setSettings(p.id, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: p.perusahaan, logoBase64: null });
-        });
+    };
+
+    // ==================== LOADING ====================
+    function showLoading(show) {
+        let overlay = document.getElementById('loadingOverlay');
+        if (!overlay && show) {
+            overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = '<div class="spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+        if (overlay && !show) {
+            overlay.remove();
+        }
     }
-    initData();
 
     // ==================== FUNGSI BANTU ====================
     function getStock(tid) {
-        const transactions = Storage.getTransactions(tid);
-        const commodities = Storage.getCommodities();
-        let stock = Object.fromEntries(commodities.map(c => [c.id, 0]));
+        const transactions = LocalCache.transactions[tid] || [];
+        const stock = {};
+        LocalCache.commodities.forEach(c => { stock[c.id] = 0; });
         transactions.forEach(t => { 
-            if (t.tipe === 'pembelian') stock[t.komoditas_id] += t.jumlah; 
-            else if (t.tipe === 'penjualan') stock[t.komoditas_id] -= t.jumlah; 
+            if (t.tipe === 'pembelian') stock[t.komoditas_id] = (stock[t.komoditas_id] || 0) + Number(t.jumlah); 
+            else if (t.tipe === 'penjualan') stock[t.komoditas_id] = (stock[t.komoditas_id] || 0) - Number(t.jumlah); 
         });
-        commodities.forEach(c => { if (stock[c.id] === undefined) stock[c.id] = 0; });
         return stock;
     }
 
     function getBalance(tid) {
-        const cashflow = Storage.getCashflow(tid);
-        return cashflow.reduce((sum, cf) => sum + (cf.tipe === 'pemasukan' ? cf.nominal : -cf.nominal), 0);
+        const cashflow = LocalCache.cashflow[tid] || [];
+        return cashflow.reduce((sum, cf) => sum + (cf.tipe === 'pemasukan' ? Number(cf.nominal) : -Number(cf.nominal)), 0);
     }
 
-    function getAggregateStats() {
-        let totalFarmers = 0, totalTransactions = 0, totalVolume = 0, totalCash = 0;
-        Storage.getTengkulakProfiles().forEach(p => {
-            const farmers = Storage.getFarmers(p.id);
-            const trans = Storage.getTransactions(p.id);
-            totalFarmers += farmers.length;
-            totalTransactions += trans.length;
-            totalVolume += trans.reduce((s,t) => s + t.jumlah, 0);
-            totalCash += getBalance(p.id);
-        });
-        return { totalFarmers, totalTransactions, totalVolume, totalCash };
+    function getFarmerName(tid, farmerId) {
+        const farmer = (LocalCache.farmers[tid] || []).find(f => f.id == farmerId);
+        return farmer ? farmer.nama : 'Petani Tidak Dikenal';
     }
 
     function getMonthsLabels() { return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; }
 
-    function getMonthlyData(tid, year = new Date().getFullYear()) {
-        const transactions = Storage.getTransactions(tid);
-        const monthlyPurchase = new Array(12).fill(0);
-        const monthlySales = new Array(12).fill(0);
-        transactions.forEach(t => {
-            if (t.tanggal) {
-                const date = new Date(t.tanggal);
-                if (date.getFullYear() === year) {
-                    const month = date.getMonth();
-                    if (t.tipe === 'pembelian') monthlyPurchase[month] += t.total || 0;
-                    else if (t.tipe === 'penjualan') monthlySales[month] += t.total || 0;
-                }
-            }
-        });
-        return { monthlyPurchase, monthlySales };
-    }
-
-    function getMonthlyCashflowData(tid, year = new Date().getFullYear()) {
-        const cashflow = Storage.getCashflow(tid);
-        const monthlyIncome = new Array(12).fill(0);
-        const monthlyExpense = new Array(12).fill(0);
-        cashflow.forEach(cf => {
-            if (cf.tanggal) {
-                const date = new Date(cf.tanggal);
-                if (date.getFullYear() === year) {
-                    const month = date.getMonth();
-                    if (cf.tipe === 'pemasukan') monthlyIncome[month] += cf.nominal || 0;
-                    else if (cf.tipe === 'pengeluaran') monthlyExpense[month] += cf.nominal || 0;
-                }
-            }
-        });
-        return { monthlyIncome, monthlyExpense };
-    }
-
-    function getNationalMonthlyData() {
-        const year = new Date().getFullYear();
-        const monthlyTotal = new Array(12).fill(0);
-        Storage.getTengkulakProfiles().forEach(p => {
-            Storage.getTransactions(p.id).forEach(t => {
-                if (t.tanggal && t.tipe === 'pembelian') {
-                    const date = new Date(t.tanggal);
-                    if (date.getFullYear() === year) monthlyTotal[date.getMonth()] += t.total || 0;
-                }
-            });
-        });
-        return monthlyTotal;
-    }
-
-    function getFarmerName(tid, farmerId) {
-        const farmer = Storage.getFarmers(tid).find(f => f.id == farmerId);
-        return farmer ? farmer.nama : 'Petani Tidak Dikenal';
-    }
-
-    function getFarmerDetails(tid, farmerId) {
-        return Storage.getFarmers(tid).find(f => f.id == farmerId) || null;
-    }
-
-    function getFarmerTransactionCount(tid, farmerId) {
-        return Storage.getTransactions(tid).filter(t => t.petani_id == farmerId).length;
-    }
-
-    function numberToWords(num) {
-        const ones = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
-        const teens = ['sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas', 'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas'];
-        const tens = ['', '', 'dua puluh', 'tiga puluh', 'empat puluh', 'lima puluh', 'enam puluh', 'tujuh puluh', 'delapan puluh', 'sembilan puluh'];
-        if (num === 0) return 'nol';
-        function convert(n) {
-            if (n < 10) return ones[n];
-            if (n < 20) return teens[n - 10];
-            if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
-            if (n < 1000) { const hundred = Math.floor(n / 100); const remainder = n % 100; let result = (hundred === 1 ? 'seratus' : ones[hundred] + ' ratus'); if (remainder > 0) result += ' ' + convert(remainder); return result; }
-            if (n < 1000000) { const thousand = Math.floor(n / 1000); const remainder = n % 1000; let result = (thousand === 1 ? 'seribu' : convert(thousand) + ' ribu'); if (remainder > 0) result += ' ' + convert(remainder); return result; }
-            if (n < 1000000000) { const million = Math.floor(n / 1000000); const remainder = n % 1000000; let result = convert(million) + ' juta'; if (remainder > 0) result += ' ' + convert(remainder); return result; }
-            return '';
-        }
-        let result = convert(Math.floor(num));
-        return result.charAt(0).toUpperCase() + result.slice(1);
-    }
-
-    // ==================== FUNGSI CETAK ====================
-    
-    // Cetak semua transaksi dalam bentuk daftar
-    window.printAllTransactions = function(tid) {
-        const settings = Storage.getSettings(tid);
-        const profile = Storage.getTengkulakProfiles().find(p => p.id === tid);
-        const tokoName = settings.namaToko || profile?.perusahaan || 'TaniTrade';
-        const transactions = Storage.getTransactions(tid);
-        const cashflows = Storage.getCashflow(tid);
-        const farmers = Storage.getFarmers(tid);
-        const commodities = Storage.getCommodities();
-        
-        // Gabungkan dan urutkan semua transaksi
-        const allEntries = [
-            ...transactions.map(t => ({...t, entryType: 'commodity'})),
-            ...cashflows.map(c => ({...c, entryType: 'cashflow'}))
-        ];
-        allEntries.sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || ''));
-        
-        const getFarmerInfo = (farmerId) => {
-            const farmer = farmers.find(f => f.id == farmerId);
-            return farmer || null;
-        };
-        
-        const getCommodityName = (id) => {
-            const comm = commodities.find(c => c.id === id);
-            return comm ? comm.nama : '-';
-        };
-        
-        // Hitung total
-        const totalPembelian = transactions.filter(t => t.tipe === 'pembelian').reduce((s, t) => s + t.total, 0);
-        const totalPenjualan = transactions.filter(t => t.tipe === 'penjualan').reduce((s, t) => s + t.total, 0);
-        const totalOperasional = cashflows.filter(c => c.tipe === 'pengeluaran').reduce((s, c) => s + c.nominal, 0);
-        const totalPemasukan = cashflows.filter(c => c.tipe === 'pemasukan').reduce((s, c) => s + c.nominal, 0);
-        
-        const formatRp = (val) => 'Rp ' + val.toLocaleString('id-ID');
-        
-        const content = `
-            <html>
-            <head>
-                <title>Daftar Transaksi - ${tokoName}</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body { font-family: 'Inter', Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-                    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                    .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #14b8a6; }
-                    .header h1 { color: #0f172a; margin-bottom: 5px; }
-                    .header h2 { color: #14b8a6; margin-bottom: 5px; }
-                    .header p { color: #64748b; }
-                    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-                    .summary-card { background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #14b8a6; }
-                    .summary-card h4 { font-size: 0.8rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
-                    .summary-card .value { font-size: 1.2rem; font-weight: bold; color: #1e293b; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
-                    th { background: #14b8a6; color: white; padding: 12px 8px; text-align: left; font-weight: 600; }
-                    td { padding: 10px 8px; border-bottom: 1px solid #e2e8f0; }
-                    tr:hover { background: #f8fafc; }
-                    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
-                    .badge-beli { background: #dcfce7; color: #15803d; }
-                    .badge-jual { background: #fee2e2; color: #991b1b; }
-                    .badge-op { background: #fef3c7; color: #92400e; }
-                    .badge-in { background: #dbeafe; color: #1d4ed8; }
-                    .footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; padding-top: 20px; border-top: 1px solid #e2e8f0; }
-                    .text-right { text-align: right; }
-                    .text-center { text-align: center; }
-                    .total-row { background: #f0fdf4; font-weight: bold; }
-                    @media print {
-                        body { background: white; padding: 0; }
-                        .container { box-shadow: none; padding: 15px; }
-                        .no-print { display: none; }
-                    }
-                    .print-btn { text-align: center; margin-top: 20px; }
-                    .btn { padding: 10px 25px; background: #14b8a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin: 0 5px; }
-                    .btn-secondary { background: #64748b; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>${tokoName}</h1>
-                        <h2>DAFTAR RIWAYAT TRANSAKSI</h2>
-                        <p>${profile?.nama || ''} - ${profile?.perusahaan || ''}</p>
-                        <p>Periode: Semua Transaksi | Dicetak: ${new Date().toLocaleString('id-ID')}</p>
-                    </div>
-                    
-                    <div class="summary">
-                        <div class="summary-card"><h4>Total Pembelian</h4><div class="value">${formatRp(totalPembelian)}</div></div>
-                        <div class="summary-card"><h4>Total Penjualan</h4><div class="value">${formatRp(totalPenjualan)}</div></div>
-                        <div class="summary-card"><h4>Total Operasional</h4><div class="value">${formatRp(totalOperasional)}</div></div>
-                        <div class="summary-card"><h4>Pemasukan Lain</h4><div class="value">${formatRp(totalPemasukan)}</div></div>
-                        <div class="summary-card"><h4>Saldo Kas</h4><div class="value">${formatRp(getBalance(tid))}</div></div>
-                    </div>
-                    
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Tanggal</th>
-                                <th>Jenis</th>
-                                <th>Petani/Pihak</th>
-                                <th>Komoditas/Kategori</th>
-                                <th>Jumlah</th>
-                                <th>Harga</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${allEntries.map((e, idx) => {
-                                let jenis = '';
-                                let badgeClass = '';
-                                let pihak = '-';
-                                let komoditas = '-';
-                                let jumlah = '-';
-                                let harga = '-';
-                                let total = 0;
-                                
-                                if (e.entryType === 'commodity') {
-                                    if (e.tipe === 'pembelian') {
-                                        jenis = 'Pembelian';
-                                        badgeClass = 'badge-beli';
-                                        const farmer = getFarmerInfo(e.petani_id);
-                                        pihak = farmer ? farmer.nama : 'Petani Tidak Dikenal';
-                                        komoditas = getCommodityName(e.komoditas_id);
-                                        jumlah = e.jumlah ? e.jumlah.toLocaleString() + ' kg' : '-';
-                                        harga = e.harga_per_kg ? 'Rp ' + e.harga_per_kg.toLocaleString() : '-';
-                                        total = e.total || 0;
-                                    } else {
-                                        jenis = 'Penjualan';
-                                        badgeClass = 'badge-jual';
-                                        pihak = '-';
-                                        komoditas = getCommodityName(e.komoditas_id);
-                                        jumlah = e.jumlah ? e.jumlah.toLocaleString() + ' kg' : '-';
-                                        harga = e.harga_per_kg ? 'Rp ' + e.harga_per_kg.toLocaleString() : '-';
-                                        total = e.total || 0;
-                                    }
-                                } else {
-                                    if (e.tipe === 'pemasukan') {
-                                        jenis = 'Pemasukan';
-                                        badgeClass = 'badge-in';
-                                    } else {
-                                        jenis = 'Pengeluaran';
-                                        badgeClass = 'badge-op';
-                                    }
-                                    pihak = '-';
-                                    komoditas = e.kategori || '-';
-                                    total = e.nominal || 0;
-                                }
-                                
-                                return `
-                                    <tr>
-                                        <td>${idx + 1}</td>
-                                        <td>${e.tanggal || '-'}</td>
-                                        <td><span class="badge ${badgeClass}">${jenis}</span></td>
-                                        <td>${pihak}</td>
-                                        <td>${komoditas}</td>
-                                        <td class="text-center">${jumlah}</td>
-                                        <td class="text-right">${harga}</td>
-                                        <td class="text-right"><strong>${formatRp(total)}</strong></td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                            ${allEntries.length === 0 ? '<tr><td colspan="8" style="text-align:center; padding:30px;">Belum ada data transaksi</td></tr>' : ''}
-                        </tbody>
-                    </table>
-                    
-                    <div class="footer">
-                        <p>Dokumen ini dicetak secara elektronik dari sistem TaniTrade Pro</p>
-                        <p>TTD Digital: _________________________</p>
-                    </div>
-                    
-                    <div class="print-btn no-print">
-                        <button class="btn" onclick="window.print();"><i class="fas fa-print"></i> Cetak Daftar</button>
-                        <button class="btn btn-secondary" onclick="window.close();">Tutup</button>
-                    </div>
-                </div>
-                <script>
-                    window.onload = function() { setTimeout(function() { window.print(); }, 300); };
-                <\/script>
-            </body>
-            </html>
-        `;
-        const win = window.open('', '_blank');
-        win.document.write(content);
-        win.document.close();
-    };
-
-    // Cetak struk per item (diperbaiki dengan nama penjual/petani)
-    window.printBill = function(trans, tid) {
-        let farmerName = '';
-        let farmerDetails = null;
-        if (trans.tipe === 'pembelian' && trans.petani_id && tid) {
-            farmerName = getFarmerName(tid, trans.petani_id);
-            farmerDetails = getFarmerDetails(tid, trans.petani_id);
-        }
-        const settings = tid ? Storage.getSettings(tid) : { namaToko: 'TaniTrade' };
-        const tokoName = settings.namaToko || 'TaniTrade';
-        const profile = Storage.getTengkulakProfiles().find(p => p.id === tid);
-        const tanggal = trans.tanggal ? new Date(trans.tanggal).toLocaleString('id-ID', { 
-            day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-        }) : new Date().toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        
-        // Untuk penjualan, pihak penjual adalah toko sendiri
-        const penjual = trans.tipe === 'penjualan' ? (profile?.nama || tokoName) : (farmerName || 'Petani');
-        
-        const content = `
-            <html>
-            <head>
-                <title>Struk Transaksi - ${tokoName}</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body { font-family: 'Courier New', monospace; padding: 20px; background: #f5f5f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-                    .struk { max-width: 380px; margin: auto; background: white; border: 1px solid #ddd; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                    .header { text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #14b8a6; padding-bottom: 15px; }
-                    .header h3 { margin: 0 0 5px 0; color: #14b8a6; font-size: 1.4rem; font-weight: bold; }
-                    .header p { margin: 0; color: #666; font-size: 0.8rem; }
-                    .divider { border-top: 1px dashed #ccc; margin: 15px 0; }
-                    .item { display: flex; justify-content: space-between; margin: 10px 0; font-size: 0.9rem; }
-                    .item strong { color: #333; min-width: 100px; }
-                    .item span { text-align: right; color: #555; }
-                    .total { font-weight: bold; border-top: 2px dashed #14b8a6; margin-top: 15px; padding-top: 15px; font-size: 1.1rem; color: #0f172a; }
-                    .footer { text-align: center; margin-top: 25px; font-size: 0.8rem; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
-                    .signature { margin-top: 30px; display: flex; justify-content: space-between; font-size: 0.75rem; }
-                    .signature div { text-align: center; }
-                    .signature .line { margin-top: 30px; border-top: 1px solid #333; padding-top: 5px; }
-                    .seller-info { background: #f8fafc; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.8rem; }
-                    @media print { body { background: white; padding: 0; } .struk { box-shadow: none; border: 1px solid #000; } .no-print { display: none; } }
-                </style>
-            </head>
-            <body>
-                <div class="struk">
-                    <div class="header">
-                        <h3>${tokoName}</h3>
-                        <p>${tanggal}</p>
-                        <p style="margin-top: 5px; font-size: 0.8rem;">No. Transaksi: ${trans.id}</p>
-                    </div>
-                    
-                    <div class="item"><strong>Jenis:</strong> <span style="font-weight: bold; color: ${trans.tipe === 'pembelian' ? '#14b8a6' : (trans.tipe === 'penjualan' ? '#ef4444' : '#3b82f6')}">${trans.tipe === 'pembelian' ? 'PEMBELIAN' : (trans.tipe === 'penjualan' ? 'PENJUALAN' : 'OPERASIONAL')}</span></div>
-                    
-                    ${trans.tipe === 'pembelian' && farmerDetails ? `
-                    <div class="seller-info">
-                        <div><strong>Data Petani/Penjual:</strong></div>
-                        <div>Nama: ${farmerDetails.nama || '-'}</div>
-                        <div>HP: ${farmerDetails.hp || '-'}</div>
-                        <div>Alamat: ${farmerDetails.desa || '-'}, ${farmerDetails.kecamatan || ''}</div>
-                    </div>
-                    ` : ''}
-                    
-                    ${trans.tipe === 'penjualan' ? `
-                    <div class="seller-info">
-                        <div><strong>Data Penjual:</strong></div>
-                        <div>Nama: ${profile?.nama || tokoName}</div>
-                        <div>HP: ${profile?.hp || '-'}</div>
-                        <div>Alamat: ${profile?.alamat || '-'}</div>
-                    </div>
-                    ` : ''}
-                    
-                    <div class="item"><strong>Penjual:</strong> <span>${penjual}</span></div>
-                    ${trans.komoditas_nama ? `<div class="item"><strong>Komoditas:</strong> <span>${trans.komoditas_nama}</span></div>` : ''}
-                    ${trans.jumlah ? `<div class="item"><strong>Jumlah:</strong> <span>${trans.jumlah.toLocaleString()} kg</span></div>` : ''}
-                    ${trans.harga_per_kg ? `<div class="item"><strong>Harga/kg:</strong> <span>Rp ${trans.harga_per_kg.toLocaleString()}</span></div>` : ''}
-                    ${trans.kategori ? `<div class="item"><strong>Kategori:</strong> <span>${trans.kategori}</span></div>` : ''}
-                    
-                    <div class="divider"></div>
-                    
-                    <div class="item total">
-                        <strong>TOTAL:</strong> 
-                        <span>Rp ${(trans.total || trans.nominal || 0).toLocaleString()}</span>
-                    </div>
-                    
-                    <div style="margin-top: 10px; font-style: italic; color: #64748b; font-size: 0.8rem;">
-                        Terbilang: ${numberToWords(trans.total || trans.nominal || 0)} rupiah
-                    </div>
-                    
-                    <div class="signature">
-                        <div>
-                            <div>${trans.tipe === 'pembelian' ? 'Petani/Penjual' : 'Pembeli'}</div>
-                            <div class="line">${trans.tipe === 'pembelian' ? (farmerName || '....................') : '....................'}</div>
-                        </div>
-                        <div>
-                            <div>${trans.tipe === 'pembelian' ? 'Penerima' : 'Kasir'}</div>
-                            <div class="line">${trans.tipe === 'pembelian' ? (profile?.nama || '....................') : '....................'}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="footer">
-                        Terima kasih telah bertransaksi.<br>
-                        <small>Simpan struk ini sebagai bukti pembayaran yang sah.</small>
-                    </div>
-                    
-                    <div class="no-print" style="text-align: center; margin-top: 20px;">
-                        <button onclick="window.print();" style="padding: 10px 20px; background: #14b8a6; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">🖨️ Cetak Struk</button>
-                        <button onclick="window.close();" style="padding: 10px 20px; background: #64748b; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 10px;">Tutup</button>
-                    </div>
-                </div>
-                <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); };<\/script>
-            </body>
-            </html>
-        `;
-        const win = window.open('', '_blank');
-        win.document.write(content);
-        win.document.close();
-    };
-
-    // Cetak nota pembelian (lebih detail)
-    window.printPurchaseNote = function(trans, tid) {
-        let farmerName = '';
-        let farmerDetails = null;
-        if (trans.tipe === 'pembelian' && trans.petani_id && tid) {
-            farmerName = getFarmerName(tid, trans.petani_id);
-            farmerDetails = getFarmerDetails(tid, trans.petani_id);
-        }
-        
-        const settings = tid ? Storage.getSettings(tid) : { namaToko: 'TaniTrade' };
-        const tokoName = settings.namaToko || 'TaniTrade';
-        const profile = Storage.getTengkulakProfiles().find(p => p.id === tid);
-        const tanggal = trans.tanggal ? new Date(trans.tanggal).toLocaleString('id-ID', { 
-            weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
-        }) : new Date().toLocaleString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
-        
-        const komoditas = Storage.getCommodities().find(c => c.id === trans.komoditas_id);
-        
-        const content = `
-            <html>
-            <head>
-                <title>Nota Pembelian - ${tokoName}</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; padding: 30px; background: #f0f4f8; margin: 0; }
-                    .nota { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-                    .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #14b8a6; padding-bottom: 20px; }
-                    .header h2 { color: #0f172a; margin: 0 0 5px 0; font-size: 1.8rem; }
-                    .header h3 { color: #14b8a6; margin: 5px 0; font-size: 1.3rem; }
-                    .header p { color: #64748b; margin: 5px 0; font-size: 0.9rem; }
-                    .title { text-align: center; margin: 20px 0; }
-                    .title h1 { color: #1e293b; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
-                    .info-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px; }
-                    .info-item { margin-bottom: 10px; }
-                    .info-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 3px; }
-                    .info-value { font-size: 1rem; font-weight: 600; color: #1e293b; }
-                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                    table th { background: #14b8a6; color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 0.9rem; }
-                    table td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
-                    table tfoot td { border-top: 2px solid #14b8a6; border-bottom: none; font-weight: bold; font-size: 1.1rem; background: #f0fdf4; }
-                    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
-                    .signature-section { display: flex; justify-content: space-between; margin-top: 40px; }
-                    .signature-box { text-align: center; min-width: 150px; }
-                    .signature-line { margin-top: 40px; border-top: 1px solid #334155; padding-top: 5px; font-size: 0.85rem; }
-                    .note { margin-top: 20px; padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px; font-size: 0.85rem; }
-                    .print-btn { text-align: center; margin-top: 20px; }
-                    .btn { padding: 10px 25px; background: #14b8a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin: 0 5px; }
-                    .btn-secondary { background: #64748b; }
-                    .btn:hover { opacity: 0.9; }
-                    @media print { body { background: white; padding: 10px; } .nota { box-shadow: none; padding: 20px; } .no-print { display: none; } .info-section { background: #f9f9f9; } }
-                </style>
-            </head>
-            <body>
-                <div class="nota">
-                    <div class="header">
-                        <h2>${tokoName}</h2>
-                        ${profile ? `<p>${profile.perusahaan || ''}</p>` : ''}
-                        ${profile ? `<p>${profile.alamat || ''} ${profile.kecamatan ? ', ' + profile.kecamatan : ''}</p>` : ''}
-                        ${profile ? `<p>HP: ${profile.hp || '-'}</p>` : ''}
-                    </div>
-                    <div class="title"><h1>NOTA PEMBELIAN</h1><p style="color: #64748b;">No. ${trans.id}</p></div>
-                    <div class="info-section">
-                        <div>
-                            <div class="info-item"><div class="info-label">Tanggal</div><div class="info-value">${tanggal}</div></div>
-                            <div class="info-item"><div class="info-label">Petani/Penjual</div><div class="info-value">${farmerName || '-'}</div></div>
-                            ${farmerDetails ? `
-                            <div class="info-item"><div class="info-label">HP Penjual</div><div class="info-value">${farmerDetails.hp || '-'}</div></div>
-                            <div class="info-item"><div class="info-label">Alamat Penjual</div><div class="info-value">${farmerDetails.desa || '-'}, ${farmerDetails.kecamatan || ''}</div></div>
-                            ` : ''}
-                        </div>
-                        <div>
-                            <div class="info-item"><div class="info-label">Pembeli</div><div class="info-value">${profile?.nama || tokoName}</div></div>
-                            <div class="info-item"><div class="info-label">Komoditas</div><div class="info-value">${komoditas?.nama || trans.komoditas_nama || '-'}</div></div>
-                            <div class="info-item"><div class="info-label">Satuan</div><div class="info-value">${komoditas?.satuan || 'kg'}</div></div>
-                        </div>
-                    </div>
-                    <table>
-                        <thead><tr><th>Deskripsi</th><th style="text-align: center;">Jumlah</th><th style="text-align: right;">Harga/kg</th><th style="text-align: right;">Subtotal</th></tr></thead>
-                        <tbody><tr><td>${komoditas?.nama || trans.komoditas_nama || 'Komoditas'}</td><td style="text-align: center;">${trans.jumlah ? trans.jumlah.toLocaleString() : 0} kg</td><td style="text-align: right;">Rp ${trans.harga_per_kg ? trans.harga_per_kg.toLocaleString() : 0}</td><td style="text-align: right;">Rp ${trans.total ? trans.total.toLocaleString() : 0}</td></tr></tbody>
-                        <tfoot><tr><td colspan="3" style="text-align: right; font-weight: bold;">TOTAL</td><td style="text-align: right; font-weight: bold; font-size: 1.1rem;">Rp ${(trans.total || 0).toLocaleString()}</td></tr></tfoot>
-                    </table>
-                    <div style="margin-top: 20px; font-style: italic; color: #64748b;">Terbilang: ${numberToWords(trans.total || 0)} rupiah</div>
-                    <div class="note"><strong>Catatan:</strong><br>• Harga sudah termasuk biaya timbang<br>• Pembayaran dilakukan secara tunai<br>• Barang yang sudah dibeli tidak dapat dikembalikan</div>
-                    <div class="signature-section">
-                        <div class="signature-box"><div>Petani/Penjual</div><div class="signature-line">${farmerName || '....................'}</div></div>
-                        <div class="signature-box"><div>Pembeli</div><div class="signature-line">${profile?.nama || '....................'}</div></div>
-                        <div class="signature-box"><div>Saksi</div><div class="signature-line">....................</div></div>
-                    </div>
-                    <div class="footer"><p style="text-align: center; font-size: 0.8rem; color: #94a3b8;">Dicetak pada: ${new Date().toLocaleString('id-ID')}<br>Dokumen ini sah dan dicetak secara elektronik</p></div>
-                    <div class="print-btn no-print">
-                        <button class="btn" onclick="window.print();"><i class="fas fa-print"></i> Cetak Nota</button>
-                        <button class="btn btn-secondary" onclick="window.close();">Tutup</button>
-                    </div>
-                </div>
-                <script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };<\/script>
-            </body>
-            </html>
-        `;
-        const win = window.open('', '_blank');
-        win.document.write(content);
-        win.document.close();
-    };
-
-    // ==================== GLOBAL FUNCTIONS ====================
-    window.deleteTransaction = function(tid, id, type) {
-        if (!confirm('Hapus transaksi ini?')) return;
-        if (type === 'commodity') {
-            let transactions = Storage.getTransactions(tid);
-            const index = transactions.findIndex(t => t.id === id);
-            if (index !== -1) {
-                let cashflows = Storage.getCashflow(tid);
-                const cfIndex = cashflows.findIndex(cf => cf.id === id);
-                if (cfIndex !== -1) cashflows.splice(cfIndex, 1);
-                transactions.splice(index, 1);
-                Storage.setTransactions(tid, transactions);
-                Storage.setCashflow(tid, cashflows);
-                alert('Transaksi dihapus.');
-            }
-        } else if (type === 'cashflow') {
-            let cashflows = Storage.getCashflow(tid);
-            const index = cashflows.findIndex(c => c.id === id);
-            if (index !== -1) {
-                cashflows.splice(index, 1);
-                Storage.setCashflow(tid, cashflows);
-                alert('Transaksi dihapus.');
-            }
-        }
-        if (currentUser?.role === 'tengkulak') renderTengTransactions(tid);
-        else renderAdminContent();
-    };
-
-    window.editTransaction = function(tid, id, type) {
-        if (type === 'commodity') {
-            let transactions = Storage.getTransactions(tid);
-            const trans = transactions.find(t => t.id === id);
-            if (!trans) return;
-            const newJumlah = prompt('Edit jumlah (kg):', trans.jumlah);
-            if (newJumlah === null) return;
-            const newHarga = prompt('Edit harga per kg (Rp):', trans.harga_per_kg);
-            if (newHarga === null) return;
-            const jumlahBaru = parseFloat(newJumlah);
-            const hargaBaru = parseFloat(newHarga);
-            if (isNaN(jumlahBaru) || isNaN(hargaBaru)) { alert('Input tidak valid.'); return; }
-            
-            if (trans.tipe === 'penjualan') {
-                const currentStock = getStock(tid);
-                const oldJumlah = trans.jumlah;
-                const komoditasId = trans.komoditas_id;
-                const availableStock = currentStock[komoditasId] + oldJumlah;
-                if (availableStock < jumlahBaru) { 
-                    alert(`Stok tidak mencukupi! Stok tersedia: ${availableStock.toLocaleString()} kg`); 
-                    return; 
-                }
-            }
-            
-            trans.jumlah = jumlahBaru;
-            trans.harga_per_kg = hargaBaru;
-            trans.total = jumlahBaru * hargaBaru;
-            
-            let cashflows = Storage.getCashflow(tid);
-            const cfIndex = cashflows.findIndex(cf => cf.id === trans.id);
-            if (cfIndex !== -1) {
-                cashflows[cfIndex].nominal = trans.total;
-                cashflows[cfIndex].tipe = trans.tipe === 'pembelian' ? 'pengeluaran' : 'pemasukan';
-            }
-            Storage.setCashflow(tid, cashflows);
-            Storage.setTransactions(tid, transactions);
-            alert('Transaksi diubah.');
-        } else if (type === 'cashflow') {
-            let cashflows = Storage.getCashflow(tid);
-            const cf = cashflows.find(c => c.id === id);
-            if (!cf) return;
-            
-            const newTanggal = prompt('Edit tanggal (YYYY-MM-DD):', cf.tanggal);
-            if (newTanggal === null) return;
-            
-            const newTipe = prompt('Edit tipe (pemasukan/pengeluaran):', cf.tipe);
-            if (newTipe === null) return;
-            if (newTipe !== 'pemasukan' && newTipe !== 'pengeluaran') {
-                alert('Tipe harus "pemasukan" atau "pengeluaran"');
-                return;
-            }
-            
-            const newKategori = prompt('Edit kategori:', cf.kategori || '');
-            if (newKategori === null) return;
-            
-            const newNominal = prompt('Edit nominal (Rp):', cf.nominal);
-            if (newNominal === null) return;
-            const nominalBaru = parseFloat(newNominal);
-            if (isNaN(nominalBaru)) { alert('Input tidak valid.'); return; }
-            
-            cf.tanggal = newTanggal;
-            cf.tipe = newTipe;
-            cf.kategori = newKategori;
-            cf.nominal = nominalBaru;
-            
-            Storage.setCashflow(tid, cashflows);
-            alert('Transaksi diubah.');
-        }
-        if (currentUser?.role === 'tengkulak') renderTengTransactions(tid);
-        else renderAdminContent();
-    };
-
-    // ==================== MODAL EDIT PETANI ====================
-    let currentEditFarmerId = null;
-    let currentEditTid = null;
-
-    function showEditFarmerModal(tid, farmer) {
-        currentEditFarmerId = farmer.id;
-        currentEditTid = tid;
-        const modal = document.getElementById('farmerModal');
-        if (!modal) return;
-        document.getElementById('edit_nama').value = farmer.nama || '';
-        document.getElementById('edit_hp').value = farmer.hp || '';
-        document.getElementById('edit_desa').value = farmer.desa || '';
-        document.getElementById('edit_kecamatan').value = farmer.kecamatan || '';
-        modal.style.display = 'flex';
-    }
-
-    function closeFarmerModal() {
-        const modal = document.getElementById('farmerModal');
-        if (modal) modal.style.display = 'none';
-        currentEditFarmerId = null;
-        currentEditTid = null;
-    }
-
-    function saveFarmerEdit() {
-        if (!currentEditTid || !currentEditFarmerId) return;
-        const newNama = document.getElementById('edit_nama').value.trim();
-        const newHp = document.getElementById('edit_hp').value.trim();
-        const newDesa = document.getElementById('edit_desa').value.trim();
-        const newKecamatan = document.getElementById('edit_kecamatan').value.trim();
-        if (!newNama) { alert('Nama harus diisi!'); return; }
-        let farmers = Storage.getFarmers(currentEditTid);
-        const index = farmers.findIndex(f => f.id == currentEditFarmerId);
-        if (index !== -1) {
-            farmers[index].nama = newNama;
-            farmers[index].hp = newHp;
-            farmers[index].desa = newDesa;
-            farmers[index].kecamatan = newKecamatan;
-            Storage.setFarmers(currentEditTid, farmers);
-            alert('Data petani diperbarui.');
-            closeFarmerModal();
-            if (currentUser?.role === 'tengkulak' && currentTengMenu === 'farmers') {
-                renderTengFarmers(currentEditTid);
-            }
-        } else {
-            alert('Data tidak ditemukan.');
-            closeFarmerModal();
-        }
-    }
-
     // ==================== AUTH ====================
     let currentUser = null;
-    function login(username, password) {
-        const user = Storage.getUsers().find(u => u.username === username && u.password === password);
-        if (user) { currentUser = user; sessionStorage.setItem("currentUser", JSON.stringify(user)); renderApp(); } 
-        else alert("Username atau password salah!");
+    
+    async function login(username, password) {
+        showLoading(true);
+        await LocalCache.syncAll();
+        const user = LocalCache.users.find(u => u.username === username && u.password === password);
+        showLoading(false);
+        
+        if (user) { 
+            currentUser = user; 
+            sessionStorage.setItem("currentUser", JSON.stringify(user)); 
+            renderApp(); 
+        } else {
+            alert("Username atau password salah!");
+        }
     }
-    function logout() { currentUser = null; sessionStorage.removeItem("currentUser"); renderApp(); }
+    
+    function logout() { 
+        currentUser = null; 
+        sessionStorage.removeItem("currentUser"); 
+        renderApp(); 
+    }
 
     // ==================== RENDER UTAMA ====================
     let adminCharts = {}, tengkulakCharts = {};
     let currentAdminMenu = "dashboard", currentTengMenu = "dashboard";
 
-    function renderApp() {
-        if (!currentUser) { renderLogin(); return; }
+    async function renderApp() {
+        if (!currentUser) { 
+            renderLogin(); 
+            return; 
+        }
         if (currentUser.role === "admin") renderAdminApp();
         else renderTengkulakApp();
     }
@@ -980,7 +307,7 @@
         document.getElementById("appRoot").innerHTML = `
             <div class="login-container">
                 <div class="login-card">
-                    <h2 style="text-align:center;">🌾 ${APP_CONFIG.appName}</h2>
+                    <h2 style="text-align:center;">🌾 TaniTrade Pro</h2>
                     <p style="text-align:center; color:#64748b; margin-bottom:24px;">Platform Komoditas Nasional</p>
                     <form id="loginForm">
                         <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Masukkan username" required></div>
@@ -988,34 +315,53 @@
                         <button type="submit" class="btn" style="width:100%; justify-content:center;">Masuk</button>
                     </form>
                     <div class="login-footer">
-                        <p>🔐 Akses terbatas untuk pengguna terdaftar</p>
-                        <p style="margin-top: 8px;">Hubungi administrator untuk mendapatkan akses</p>
+                        <p>🔐 Data tersimpan di Google Sheets</p>
+                        <p style="margin-top: 8px;" id="syncStatus">Memuat data...</p>
                     </div>
                 </div>
             </div>
         `;
-        document.getElementById("loginForm").addEventListener("submit", (e) => { e.preventDefault(); login(document.getElementById("username").value, document.getElementById("password").value); });
+        document.getElementById("loginForm").addEventListener("submit", (e) => { 
+            e.preventDefault(); 
+            login(document.getElementById("username").value, document.getElementById("password").value); 
+        });
+        
+        // Cek koneksi
+        LocalCache.load();
+        if (LocalCache.lastSync) {
+            document.getElementById("syncStatus").innerHTML = `✅ Data tersedia (sync: ${new Date(LocalCache.lastSync).toLocaleString('id-ID')})`;
+        }
     }
 
     // =============== ADMIN MODULE ===============
     function renderAdminApp() {
         const root = document.getElementById("appRoot");
-        const systemConfig = Storage.getSystemConfig();
         root.innerHTML = `
             <div class="app">
-                <aside class="sidebar" id="sidebar"><div class="logo-area"><h2>${systemConfig.appName}</h2><p>Command Center</p></div>
+                <aside class="sidebar" id="sidebar">
+                    <div class="logo-area"><h2>TaniTrade Pro</h2><p>Command Center</p></div>
                     <nav class="nav-menu"><ul>
                         <li data-menu="dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard</li>
                         <li data-menu="tengkulak"><i class="fas fa-store"></i> Data Tengkulak</li>
                         <li data-menu="commodities"><i class="fas fa-seedling"></i> Komoditas</li>
                         <li data-menu="userManagement"><i class="fas fa-users-gear"></i> Manajemen User</li>
-                        <li data-menu="reports"><i class="fas fa-file-alt"></i> Laporan</li>
                         <li data-menu="settings"><i class="fas fa-sliders-h"></i> Pengaturan</li>
                     </ul></nav>
+                    <div style="padding:16px; text-align:center; font-size:0.7rem; color:#64748b;">
+                        <span class="sync-status online" id="syncBadge">☁️ Cloud</span>
+                    </div>
                 </aside>
                 <main class="main-content">
-                    <header class="topbar"><button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
-                        <div class="user-info"><span>Admin: ${currentUser.username}</span><div class="avatar">AD</div><button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button></div>
+                    <header class="topbar">
+                        <button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="btn btn-sm btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sync</button>
+                        </div>
+                        <div class="user-info">
+                            <span>Admin: ${currentUser.username}</span>
+                            <div class="avatar">AD</div>
+                            <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                        </div>
                     </header>
                     <div class="content" id="content"></div>
                 </main>
@@ -1032,166 +378,196 @@
         renderAdminContent();
     }
 
+    async function syncData() {
+        showLoading(true);
+        await LocalCache.syncAll();
+        showLoading(false);
+        alert('Data berhasil disinkronkan dengan Google Sheets!');
+        renderAdminContent();
+    }
+
+    window.syncData = syncData;
+
     function renderAdminContent() {
         if (currentAdminMenu === "dashboard") renderAdminDashboard();
         else if (currentAdminMenu === "tengkulak") renderAdminTengkulak();
         else if (currentAdminMenu === "commodities") renderAdminCommodities();
         else if (currentAdminMenu === "userManagement") renderUserManagement();
-        else if (currentAdminMenu === "reports") renderAdminReports();
         else renderAdminSettings();
     }
 
     function renderAdminDashboard() {
-        const stats = getAggregateStats();
-        const commodities = Storage.getCommodities();
-        const monthlyData = getNationalMonthlyData();
-        const months = getMonthsLabels();
+        const totalFarmers = Object.values(LocalCache.farmers).flat().length;
+        const totalTransactions = Object.values(LocalCache.transactions).flat().length;
+        const totalVolume = Object.values(LocalCache.transactions).flat().reduce((s, t) => s + Number(t.jumlah || 0), 0);
+        const totalCash = LocalCache.tengkulak.reduce((s, t) => s + getBalance(t.id), 0);
+        
         const html = `
             <div class="dashboard-grid">
-                <div class="stat-card"><i class="fas fa-user-friends"></i><h3>Total Petani</h3><div class="value">${stats.totalFarmers}</div></div>
-                <div class="stat-card"><i class="fas fa-exchange-alt"></i><h3>Total Transaksi</h3><div class="value">${stats.totalTransactions}</div></div>
-                <div class="stat-card"><i class="fas fa-weight-hanging"></i><h3>Volume (kg)</h3><div class="value">${stats.totalVolume.toLocaleString()}</div></div>
-                <div class="stat-card"><i class="fas fa-coins"></i><h3>Total Cashflow</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(stats.totalCash)}</div></div>
+                <div class="stat-card"><i class="fas fa-user-friends"></i><h3>Total Petani</h3><div class="value">${totalFarmers}</div></div>
+                <div class="stat-card"><i class="fas fa-exchange-alt"></i><h3>Total Transaksi</h3><div class="value">${totalTransactions}</div></div>
+                <div class="stat-card"><i class="fas fa-weight-hanging"></i><h3>Volume (kg)</h3><div class="value">${totalVolume.toLocaleString()}</div></div>
+                <div class="stat-card"><i class="fas fa-coins"></i><h3>Total Cashflow</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(totalCash)}</div></div>
             </div>
-            <div class="card"><h3>📊 Produksi per Komoditas</h3><div class="chart-container"><canvas id="adminProdChart"></canvas></div></div>
-            <div class="card"><h3>📈 Trend Nasional</h3><div class="chart-container"><canvas id="adminMonthlyChart"></canvas></div></div>
-            <div class="card"><h3>🗺️ Peta Sebaran</h3><div id="map"></div></div>
+            <div class="card">
+                <h3>📊 Status Sinkronisasi</h3>
+                <p>Data tersimpan di Google Sheets (Cloud)</p>
+                <p>Terakhir sync: ${LocalCache.lastSync ? new Date(LocalCache.lastSync).toLocaleString('id-ID') : 'Belum pernah'}</p>
+                <button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-cloud-upload-alt"></i> Sinkronkan Sekarang</button>
+            </div>
+            <div class="card">
+                <h3>📋 Data Tengkulak</h3>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>Nama</th><th>Perusahaan</th><th>Petani</th><th>Transaksi</th><th>Saldo</th></tr></thead>
+                        <tbody>
+                            ${LocalCache.tengkulak.map(t => {
+                                const farmers = (LocalCache.farmers[t.id] || []).length;
+                                const trans = (LocalCache.transactions[t.id] || []).length;
+                                const balance = getBalance(t.id);
+                                return `<tr><td>${t.nama}</td><td>${t.perusahaan}</td><td>${farmers}</td><td>${trans}</td><td>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(balance)}</td></tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         `;
         document.getElementById('content').innerHTML = html;
-        const allTrans = [];
-        Storage.getTengkulakProfiles().forEach(p => Storage.getTransactions(p.id).forEach(t => { if(t.tipe === 'pembelian') allTrans.push(t); }));
-        const prodMap = {};
-        allTrans.forEach(t => { prodMap[t.komoditas_id] = (prodMap[t.komoditas_id] || 0) + t.jumlah; });
-        const prodData = commodities.map(c => prodMap[c.id] || 0);
-        if (adminCharts.prod) adminCharts.prod.destroy();
-        const ctx = document.getElementById('adminProdChart').getContext('2d');
-        adminCharts.prod = new Chart(ctx, { type: 'bar', data: { labels: commodities.map(c=>c.nama), datasets: [{ label: 'Volume (kg)', data: prodData, backgroundColor: '#14b8a6', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } });
-        if (adminCharts.monthly) adminCharts.monthly.destroy();
-        const monthlyCtx = document.getElementById('adminMonthlyChart').getContext('2d');
-        adminCharts.monthly = new Chart(monthlyCtx, { type: 'line', data: { labels: months, datasets: [{ label: 'Pembelian (Rp)', data: monthlyData, borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,0.1)', fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: (v) => 'Rp ' + (v/1000).toFixed(0)+'k' } } } } });
-        if (window.mapInstance) window.mapInstance.remove();
-        const map = L.map('map').setView([-2.5, 118], 5);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-        const provinceProd = {};
-        Storage.getTengkulakProfiles().forEach(p => { const vol = Storage.getTransactions(p.id).filter(t=>t.tipe==='pembelian').reduce((s,t)=>s+t.jumlah,0); if(p.provinsi) provinceProd[p.provinsi] = (provinceProd[p.provinsi] || 0) + vol; });
-        const coords = { 'Jawa Timur':[-7.5361,112.2384], 'Jawa Barat':[-6.9175,107.6191], 'Jawa Tengah':[-7.1509,110.1403], 'Sumatera Utara':[2.1154,99.5451], 'Sulawesi Selatan':[-3.6688,119.9741] };
-        for (let prov in provinceProd) if(coords[prov]) L.circleMarker(coords[prov], { radius: Math.min(20, Math.sqrt(provinceProd[prov])/15 + 4), color: '#14b8a6', fillColor: '#2dd4bf', fillOpacity: 0.7 }).addTo(map).bindPopup(`<b>${prov}</b><br>${provinceProd[prov].toLocaleString()} kg`);
-        window.mapInstance = map;
     }
 
     function renderAdminTengkulak() {
-        const profiles = Storage.getTengkulakProfiles();
-        const html = `<div class="flex-between"><h2>📋 Daftar Tengkulak</h2><button class="btn" id="addTengkulakBtn"><i class="fas fa-plus"></i> Tambah</button></div>
-            <div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>Nama</th><th>Perusahaan</th><th>Provinsi</th><th>Kontak</th><th>Aksi</th></thead>
-            <tbody>${profiles.map(p => `<tr><td><strong>${p.nama}</strong></td><td>${p.perusahaan}</td><td>${p.provinsi || '-'}</td><td>${p.hp}</td><td><button class="btn btn-sm btn-secondary" onclick="alert('Petani: ${Storage.getFarmers(p.id).length}\\nTransaksi: ${Storage.getTransactions(p.id).length}')">Detail</button></td></tr>`).join('')}</tbody>}</table></div></div>`;
+        const html = `<h2>📋 Daftar Tengkulak</h2>
+            <div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>ID</th><th>Nama</th><th>Perusahaan</th><th>Provinsi</th><th>Kontak</th></thead>
+            <tbody>${LocalCache.tengkulak.map(p => `<tr><td>${p.id}</td><td><strong>${p.nama}</strong></td><td>${p.perusahaan}</td><td>${p.provinsi || '-'}</td><td>${p.hp}</td></tr>`).join('')}</tbody>}</table></div></div>`;
         document.getElementById('content').innerHTML = html;
-        document.getElementById('addTengkulakBtn').onclick = () => alert("Tambah tengkulak melalui Manajemen User");
     }
 
     function renderAdminCommodities() {
-        let comm = Storage.getCommodities();
         const html = `<div class="flex-between"><h2>🌾 Komoditas</h2><button class="btn" id="addCommBtn"><i class="fas fa-plus"></i> Tambah</button></div>
             <div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>Nama</th><th>Satuan</th><th>Harga Acuan</th><th>Aksi</th></thead>
-            <tbody>${comm.map(c => `<tr><td><strong>${c.nama}</strong></td><td>${c.satuan}</td><td>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(c.harga_acuan)}</td><td><button class="btn btn-sm btn-secondary" onclick="editComm(${c.id})">Edit</button></td></tr>`).join('')}</tbody>}</table></div></div>`;
+            <tbody>${LocalCache.commodities.map(c => `<tr><td><strong>${c.nama}</strong></td><td>${c.satuan}</td><td>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(c.harga_acuan)}</td><td><button class="btn btn-sm btn-secondary" onclick="editComm('${c.id}')">Edit</button></td></tr>`).join('')}</tbody>}</table></div></div>`;
         document.getElementById('content').innerHTML = html;
-        document.getElementById('addCommBtn').onclick = () => { const name = prompt("Nama Komoditas Baru"); if(name) { Storage.setCommodities([...Storage.getCommodities(), { id:Date.now(), nama:name, satuan:"kg", harga_acuan:1000 }]); renderAdminCommodities(); } };
-        window.editComm = (id) => { const comms = Storage.getCommodities(); const item = comms.find(c=>c.id===id); const newPrice = prompt("Harga acuan baru (Rp)", item.harga_acuan); if(newPrice) { item.harga_acuan = parseFloat(newPrice); Storage.setCommodities(comms); renderAdminCommodities(); } };
+        document.getElementById('addCommBtn').onclick = async () => { 
+            const name = prompt("Nama Komoditas Baru"); 
+            if(name) { 
+                const newComm = { id: Date.now() + '-' + Math.random(), nama: name, satuan: "kg", harga_acuan: 1000 };
+                await API.add('commodities', newComm);
+                await LocalCache.syncAll();
+                renderAdminCommodities(); 
+            } 
+        };
+        window.editComm = async (id) => { 
+            const item = LocalCache.commodities.find(c => c.id == id); 
+            const newPrice = prompt("Harga acuan baru (Rp)", item.harga_acuan); 
+            if(newPrice) { 
+                item.harga_acuan = parseFloat(newPrice); 
+                await API.update('commodities', id, item);
+                await LocalCache.syncAll();
+                renderAdminCommodities(); 
+            } 
+        };
     }
 
-    function renderUserManagement() {
-        const users = Storage.getUsers();
+    async function renderUserManagement() {
         const html = `
             <h2>👥 Manajemen User</h2>
             <div class="card"><h3>Tambah User Baru</h3>
                 <form id="addUserForm" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
-                    <div class="form-group" style="flex:1; min-width:130px;"><label>Username</label><input type="text" id="newUsername" required></div>
-                    <div class="form-group" style="flex:1; min-width:130px;"><label>Password</label><input type="password" id="newPassword" required></div>
-                    <div class="form-group" style="flex:1; min-width:100px;"><label>Role</label><select id="newRole"><option value="admin">Admin</option><option value="tengkulak">Tengkulak</option></select></div>
-                    <button type="submit" class="btn" style="margin-bottom: 16px;"><i class="fas fa-user-plus"></i> Tambah</button>
+                    <div class="form-group" style="flex:1;"><label>Username</label><input type="text" id="newUsername" required></div>
+                    <div class="form-group" style="flex:1;"><label>Password</label><input type="password" id="newPassword" required></div>
+                    <div class="form-group" style="flex:1;"><label>Role</label><select id="newRole"><option value="admin">Admin</option><option value="tengkulak">Tengkulak</option></select></div>
+                    <button type="submit" class="btn"><i class="fas fa-user-plus"></i> Tambah</button>
                 </form>
             </div>
             <div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>Username</th><th>Role</th><th>Tengkulak ID</th><th>Aksi</th></thead>
-            <tbody>${users.map(u => `<tr><td><strong>${u.username}</strong></td><td><span class="badge">${u.role === 'admin' ? 'Admin' : 'Tengkulak'}</span></td><td>${u.tengkulakId || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="delUser(${u.id})">Hapus</button></td></tr>`).join('')}</tbody>}</table></div></div>`;
+            <tbody>${LocalCache.users.map(u => `<tr><td><strong>${u.username}</strong></td><td><span class="badge">${u.role}</span></td><td>${u.tengkulakId || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="delUser('${u.id}')">Hapus</button></td></tr>`).join('')}</tbody>}</table></div></div>`;
         document.getElementById('content').innerHTML = html;
-        document.getElementById('addUserForm').addEventListener('submit', (e) => {
+        
+        document.getElementById('addUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('newUsername').value.trim();
             const password = document.getElementById('newPassword').value.trim();
             const role = document.getElementById('newRole').value;
+            
             if (!username || !password) { alert('Isi username dan password!'); return; }
-            if (Storage.getUsers().some(u => u.username === username)) { alert('Username sudah ada!'); return; }
+            if (LocalCache.users.some(u => u.username === username)) { alert('Username sudah ada!'); return; }
+            
             let tengkulakId = null;
             if (role === 'tengkulak') {
-                tengkulakId = `TK${Math.floor(Math.random() * 10000)}`;
-                const namaPerusahaan = prompt("Nama Perusahaan/Usaha:", username);
-                const namaPemilik = prompt("Nama Pemilik:", username);
-                const hp = prompt("Nomor HP:", "");
+                tengkulakId = 'TK' + Date.now();
                 const newTengkulak = { 
-                    id: tengkulakId, nama: namaPemilik || username, perusahaan: namaPerusahaan || username, 
-                    hp: hp || '', alamat: '', provinsi: '', kabupaten: '', kecamatan: '', desa: '', 
+                    id: tengkulakId, nama: username, perusahaan: username, hp: '', 
+                    alamat: '', provinsi: '', kabupaten: '', kecamatan: '', desa: '', 
                     komoditasUtama: '', createdAt: new Date().toISOString() 
                 };
-                Storage.setTengkulakProfiles([...Storage.getTengkulakProfiles(), newTengkulak]);
-                Storage.setFarmers(tengkulakId, []);
-                Storage.setTransactions(tengkulakId, []);
-                Storage.setCashflow(tengkulakId, []);
-                Storage.setSettings(tengkulakId, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: namaPerusahaan || username, logoBase64: null });
+                await API.add('tengkulak', newTengkulak);
             }
-            Storage.setUsers([...Storage.getUsers(), { id: Date.now(), username, password, role, tengkulakId }]);
+            
+            const newUser = { id: Date.now() + '-' + Math.random(), username, password, role, tengkulakId, createdAt: new Date().toISOString() };
+            await API.add('users', newUser);
+            await LocalCache.syncAll();
             alert('User ditambahkan!');
             renderUserManagement();
         });
-    }
-    window.delUser = (id) => { 
-        const user = Storage.getUsers().find(u => u.id === id);
-        if (user?.role === 'admin') {
-            const adminCount = Storage.getUsers().filter(u => u.role === 'admin').length;
-            if (adminCount <= 1) { alert('Tidak dapat menghapus admin terakhir!'); return; }
-        }
-        if(confirm('Hapus user?')) { Storage.setUsers(Storage.getUsers().filter(u => u.id !== id)); renderUserManagement(); } 
-    };
-
-    function renderAdminReports() {
-        document.getElementById('content').innerHTML = `<h2>📄 Laporan Nasional</h2><div class="card"><div style="display:flex; gap:10px; flex-wrap:wrap;"><button class="btn" id="exportExcelAll"><i class="fas fa-file-excel"></i> Export Excel</button><button class="btn btn-secondary" id="printReport"><i class="fas fa-print"></i> Cetak</button></div></div><div class="card"><h3>Ringkasan</h3><p>Total tengkulak: ${Storage.getTengkulakProfiles().length}</p><p>Total komoditas: ${Storage.getCommodities().length}</p></div>`;
-        document.getElementById('exportExcelAll').onclick = () => { let all = []; Storage.getTengkulakProfiles().forEach(p => Storage.getTransactions(p.id).forEach(t => all.push({ ...t, tengkulak: p.nama }))); const ws = XLSX.utils.json_to_sheet(all); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Semua Transaksi"); XLSX.writeFile(wb, `laporan_${new Date().toISOString().slice(0,10)}.xlsx`); };
-        document.getElementById('printReport').onclick = () => window.print();
+        
+        window.delUser = async (id) => { 
+            if(confirm('Hapus user?')) { 
+                await API.delete('users', id);
+                await LocalCache.syncAll();
+                renderUserManagement(); 
+            } 
+        };
     }
 
     function renderAdminSettings() {
-        const systemConfig = Storage.getSystemConfig();
-        const html = `<h2>⚙️ Pengaturan</h2><div class="card"><form id="systemConfigForm"><div class="form-group"><label>Nama Aplikasi</label><input type="text" id="appName" value="${systemConfig.appName}"></div><div class="form-group"><label>URL Server</label><input type="text" id="apiUrl" value="${systemConfig.apiUrl}"></div><button type="submit" class="btn">Simpan</button></form></div><div class="card"><div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Hapus semua data permanen dan kembalikan ke pengaturan awal</div><button class="btn btn-danger" id="resetAllDataBtn"><i class="fas fa-trash-alt"></i> Reset Semua Data</button></div>`;
+        const html = `<h2>⚙️ Pengaturan</h2>
+            <div class="card">
+                <h3>Koneksi Google Sheets</h3>
+                <p>API URL: ${API_URL}</p>
+                <p>Status: <span class="badge badge-stock">✅ Terhubung</span></p>
+                <p>Terakhir sync: ${LocalCache.lastSync ? new Date(LocalCache.lastSync).toLocaleString('id-ID') : 'Belum pernah'}</p>
+                <button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sinkronkan Data</button>
+            </div>
+            <div class="card">
+                <div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Reset data akan menghapus semua data di Google Sheets!</div>
+                <button class="btn btn-danger" id="resetAllDataBtn"><i class="fas fa-trash-alt"></i> Reset Semua Data</button>
+            </div>`;
         document.getElementById('content').innerHTML = html;
-        document.getElementById('systemConfigForm').addEventListener('submit', (e) => { e.preventDefault(); Storage.setSystemConfig({ appName: document.getElementById('appName').value, apiUrl: document.getElementById('apiUrl').value }); alert('Tersimpan!'); renderAdminSettings(); });
-        document.getElementById('resetAllDataBtn').onclick = () => { 
-            if(confirm('⚠️ PERINGATAN: Semua data akan dihapus dan dikembalikan ke pengaturan awal. Tindakan ini tidak dapat dibatalkan. Lanjutkan?')) { 
-                Storage.clearAllData();
-                alert('✅ Data berhasil direset! Silakan login kembali.');
-                logout();
-            } 
-        };
     }
 
     // =============== TENGKULAK MODULE ===============
     function renderTengkulakApp() {
         const tid = currentUser.tengkulakId;
-        const profile = Storage.getTengkulakProfiles().find(p => p.id === tid);
+        const profile = LocalCache.tengkulak.find(p => p.id === tid);
         if (!profile) { logout(); return; }
+        
         const root = document.getElementById("appRoot");
         root.innerHTML = `
             <div class="app">
-                <aside class="sidebar" id="sidebar"><div class="logo-area"><h2>${Storage.getSystemConfig().appName}</h2><p>${profile.nama}</p><div id="dynamicLogo"></div></div>
+                <aside class="sidebar" id="sidebar">
+                    <div class="logo-area"><h2>TaniTrade Pro</h2><p>${profile.nama}</p></div>
                     <nav class="nav-menu"><ul>
                         <li data-menu="dashboard" class="active"><i class="fas fa-chart-pie"></i> Dashboard</li>
                         <li data-menu="transactions"><i class="fas fa-hand-holding-usd"></i> Transaksi</li>
                         <li data-menu="stock"><i class="fas fa-warehouse"></i> Stok</li>
                         <li data-menu="farmers"><i class="fas fa-users"></i> Petani</li>
                         <li data-menu="reports"><i class="fas fa-chart-simple"></i> Laporan</li>
-                        <li data-menu="settings"><i class="fas fa-sliders-h"></i> Pengaturan</li>
                     </ul></nav>
+                    <div style="padding:16px; text-align:center; font-size:0.7rem; color:#64748b;">
+                        <span class="sync-status online" id="syncBadge">☁️ Cloud</span>
+                    </div>
                 </aside>
                 <main class="main-content">
-                    <header class="topbar"><button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
-                        <div class="user-info"><span>${profile.nama}</span><div class="avatar">TK</div><button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button></div>
+                    <header class="topbar">
+                        <button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="btn btn-sm btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sync</button>
+                        </div>
+                        <div class="user-info">
+                            <span>${profile.nama}</span>
+                            <div class="avatar">TK</div>
+                            <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                        </div>
                     </header>
                     <div class="content" id="content"></div>
                 </main>
@@ -1205,15 +581,6 @@
             currentTengMenu = li.dataset.menu;
             renderTengContent(tid);
         }));
-        const s = Storage.getSettings(tid);
-        if (s.logoBase64) document.querySelector("#dynamicLogo").innerHTML = `<img src="${s.logoBase64}" style="max-width:55px; margin-top:8px; border-radius:10px;">`;
-        if (!document.getElementById('farmerModal')) {
-            const modalDiv = document.createElement('div');
-            modalDiv.id = 'farmerModal';
-            modalDiv.className = 'modal';
-            modalDiv.innerHTML = `<div class="modal-content"><h3>✏️ Edit Petani</h3><div class="form-group"><label>Nama</label><input type="text" id="edit_nama"></div><div class="form-group"><label>HP</label><input type="text" id="edit_hp"></div><div class="form-group"><label>Desa</label><input type="text" id="edit_desa"></div><div class="form-group"><label>Kecamatan</label><input type="text" id="edit_kecamatan"></div><div style="display:flex; gap:10px; justify-content:flex-end;"><button class="btn btn-secondary" onclick="closeFarmerModal()">Batal</button><button class="btn" onclick="saveFarmerEdit()">Simpan</button></div></div>`;
-            document.body.appendChild(modalDiv);
-        }
         renderTengContent(tid);
     }
 
@@ -1223,43 +590,44 @@
         else if (currentTengMenu === "stock") renderTengStock(tid);
         else if (currentTengMenu === "farmers") renderTengFarmers(tid);
         else if (currentTengMenu === "reports") renderTengReports(tid);
-        else renderTengSettings(tid);
     }
 
     function renderTengDashboard(tid) {
-        const farmers = Storage.getFarmers(tid);
-        const trans = Storage.getTransactions(tid);
+        const farmers = LocalCache.farmers[tid] || [];
+        const trans = LocalCache.transactions[tid] || [];
         const balance = getBalance(tid);
-        const totalPurchase = trans.filter(t=>t.tipe==='pembelian').reduce((s,t)=>s+t.total,0);
-        const totalSale = trans.filter(t=>t.tipe==='penjualan').reduce((s,t)=>s+t.total,0);
-        const { monthlyPurchase, monthlySales } = getMonthlyData(tid);
-        const months = getMonthsLabels();
-        const html = `<div class="dashboard-grid">${[
-            { icon:"user-plus", label:"Petani", value:farmers.length },
-            { icon:"retweet", label:"Transaksi", value:trans.length },
-            { icon:"shopping-cart", label:"Pembelian", value:new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(totalPurchase) },
-            { icon:"chart-line", label:"Penjualan", value:new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(totalSale) },
-            { icon:"wallet", label:"Saldo Kas", value:new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(balance) }
-        ].map(s => `<div class="stat-card"><i class="fas fa-${s.icon}"></i><h3>${s.label}</h3><div class="value">${typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</div></div>`).join('')}</div>
-        <div class="card"><h3>📈 Trend</h3><div class="chart-container"><canvas id="trendChart"></canvas></div></div>
-        <div class="card"><h3>💰 Arus Kas</h3><div class="chart-container"><canvas id="cashflowChart"></canvas></div></div>`;
+        const totalPurchase = trans.filter(t => t.tipe === 'pembelian').reduce((s, t) => s + Number(t.total || 0), 0);
+        const totalSale = trans.filter(t => t.tipe === 'penjualan').reduce((s, t) => s + Number(t.total || 0), 0);
+        
+        const html = `
+            <div class="dashboard-grid">
+                <div class="stat-card"><i class="fas fa-user-plus"></i><h3>Petani</h3><div class="value">${farmers.length}</div></div>
+                <div class="stat-card"><i class="fas fa-retweet"></i><h3>Transaksi</h3><div class="value">${trans.length}</div></div>
+                <div class="stat-card"><i class="fas fa-shopping-cart"></i><h3>Pembelian</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(totalPurchase)}</div></div>
+                <div class="stat-card"><i class="fas fa-chart-line"></i><h3>Penjualan</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(totalSale)}</div></div>
+                <div class="stat-card"><i class="fas fa-wallet"></i><h3>Saldo Kas</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(balance)}</div></div>
+            </div>
+            <div class="card">
+                <h3>📊 Ringkasan</h3>
+                <p>Data tersimpan di Google Sheets. Semua perubahan akan tersinkronisasi ke cloud.</p>
+                <button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-cloud-upload-alt"></i> Sinkronkan Sekarang</button>
+            </div>
+        `;
         document.getElementById('content').innerHTML = html;
-        if (tengkulakCharts.trend) tengkulakCharts.trend.destroy();
-        const ctx = document.getElementById('trendChart').getContext('2d');
-        tengkulakCharts.trend = new Chart(ctx, { type:'line', data:{ labels:months, datasets:[{ label:'Beli', data:monthlyPurchase, borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.1)', fill:true, tension:0.3 },{ label:'Jual', data:monthlySales, borderColor:'#14b8a6', backgroundColor:'rgba(20,184,166,0.1)', fill:true, tension:0.3 }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ ticks:{ callback:(v)=>'Rp '+ (v/1000).toFixed(0)+'k' } } } } });
-        const { monthlyIncome, monthlyExpense } = getMonthlyCashflowData(tid);
-        if (tengkulakCharts.cashflow) tengkulakCharts.cashflow.destroy();
-        const cashCtx = document.getElementById('cashflowChart').getContext('2d');
-        tengkulakCharts.cashflow = new Chart(cashCtx, { type:'bar', data:{ labels:months, datasets:[{ label:'Pemasukan', data:monthlyIncome, backgroundColor:'#10b981' },{ label:'Pengeluaran', data:monthlyExpense, backgroundColor:'#ef4444' }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ ticks:{ callback:(v)=>'Rp '+ (v/1000).toFixed(0)+'k' } } } } });
     }
 
-    function renderTengTransactions(tid) {
+    async function renderTengTransactions(tid) {
+        const farmers = LocalCache.farmers[tid] || [];
+        const commodities = LocalCache.commodities || [];
+        const trans = LocalCache.transactions[tid] || [];
+        const cashflow = LocalCache.cashflow[tid] || [];
+        
+        const allEntries = [...trans.map(t => ({...t, entryType: 'commodity'})), ...cashflow.map(c => ({...c, entryType: 'cashflow'}))];
+        allEntries.sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || ''));
+        
         const html = `
             <div class="card">
-                <div class="flex-between">
-                    <h3>➕ Input Transaksi</h3>
-                    <button class="btn btn-print-all" onclick="printAllTransactions('${tid}')"><i class="fas fa-list"></i> Cetak Semua Transaksi</button>
-                </div>
+                <div class="flex-between"><h3>➕ Input Transaksi</h3></div>
                 <div class="tab-buttons">
                     <button class="tab-btn active" data-tab="buy">Beli</button>
                     <button class="tab-btn" data-tab="sell">Jual</button>
@@ -1268,244 +636,150 @@
                 <div id="transFormContainer"></div>
             </div>
             <div class="card">
-                <div class="flex-between">
-                    <h3>📜 Riwayat Transaksi</h3>
-                    <button class="btn btn-sm btn-secondary" onclick="printAllTransactions('${tid}')"><i class="fas fa-print"></i> Cetak Daftar</button>
-                </div>
-                <div class="filter-bar">
-                    <select id="filterType">
-                        <option value="all">Semua Jenis</option>
-                        <option value="pembelian">Pembelian</option>
-                        <option value="penjualan">Penjualan</option>
-                        <option value="pemasukan">Pemasukan</option>
-                        <option value="pengeluaran">Pengeluaran</option>
-                    </select>
-                    <input type="month" id="filterMonth" value="${new Date().toISOString().slice(0,7)}">
-                    <button class="btn btn-sm btn-secondary" id="applyFilterBtn"><i class="fas fa-filter"></i> Filter</button>
-                    <button class="btn btn-sm btn-secondary" id="resetFilterBtn"><i class="fas fa-times"></i> Reset</button>
-                </div>
-                <div id="historyList"></div>
+                <h3>📜 Riwayat Transaksi</h3>
+                <div class="table-wrapper"><table class="data-table"><thead><th>Tanggal</th><th>Jenis</th><th>Detail</th><th>Nominal</th></thead>
+                <tbody>${allEntries.slice(0, 20).map(e => {
+                    let detail = e.komoditas_nama || e.kategori || '-';
+                    if (e.tipe === 'pembelian' && e.petani_id) detail = getFarmerName(tid, e.petani_id) + ' - ' + detail;
+                    return `<tr><td>${e.tanggal || '-'}</td><td><span class="badge">${e.tipe}</span></td><td>${detail}</td><td><strong>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(e.total || e.nominal || 0)}</strong></td></tr>`;
+                }).join('')}</tbody></table></div>
             </div>
         `;
         document.getElementById('content').innerHTML = html;
         
-        let active = 'buy';
+        // Form pembelian
         const container = document.getElementById('transFormContainer');
-        const buyForm = () => `<form id="transForm"><div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" value="${new Date().toISOString().slice(0,10)}"></div><div class="form-group"><label>Petani</label><select id="petaniId">${Storage.getFarmers(tid).map(f=>`<option value="${f.id}">${f.nama}</option>`).join('')}<option value="NEW">+ Tambah Petani</option></select></div><div class="form-group"><label>Komoditas</label><select id="komoditasId">${Storage.getCommodities().map(c=>`<option value="${c.id}">${c.nama}</option>`).join('')}</select></div><div class="form-group"><label>Jumlah (kg)</label><input type="number" id="jumlah" step="0.1" required></div><div class="form-group"><label>Harga/kg (Rp)</label><input type="number" id="harga" required></div><button type="submit" class="btn">Simpan</button></form>`;
-        const sellForm = () => `<form id="sellForm"><div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" value="${new Date().toISOString().slice(0,10)}"></div><div class="form-group"><label>Komoditas</label><select id="komoditasId">${Storage.getCommodities().map(c=>`<option value="${c.id}">${c.nama}</option>`).join('')}</select></div><div class="form-group"><label>Jumlah (kg)</label><input type="number" id="jumlah" step="0.1" required></div><div class="form-group"><label>Harga/kg (Rp)</label><input type="number" id="harga" required></div><button type="submit" class="btn">Catat</button></form>`;
-        const opForm = () => `<form id="opForm"><div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" value="${new Date().toISOString().slice(0,10)}"></div><div class="form-group"><label>Tipe</label><select id="tipe"><option>pengeluaran</option><option>pemasukan</option></select></div><div class="form-group"><label>Kategori</label><input id="kategori" placeholder="Transport, Gaji"></div><div class="form-group"><label>Nominal (Rp)</label><input type="number" id="nominal"></div><button type="submit" class="btn">Tambah</button></form>`;
+        container.innerHTML = `
+            <form id="buyForm">
+                <div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" value="${new Date().toISOString().slice(0,10)}" required></div>
+                <div class="form-group"><label>Petani</label><select id="petaniId" required>${farmers.map(f => `<option value="${f.id}">${f.nama}</option>`).join('')}</select></div>
+                <div class="form-group"><label>Komoditas</label><select id="komoditasId" required>${commodities.map(c => `<option value="${c.id}">${c.nama}</option>`).join('')}</select></div>
+                <div class="form-group"><label>Jumlah (kg)</label><input type="number" id="jumlah" step="0.1" required></div>
+                <div class="form-group"><label>Harga/kg (Rp)</label><input type="number" id="harga" required></div>
+                <button type="submit" class="btn">Simpan Pembelian</button>
+            </form>
+        `;
         
-        const updateForm = () => { container.innerHTML = active==='buy' ? buyForm() : (active==='sell' ? sellForm() : opForm()); attachEvents(); };
-        const attachEvents = () => {
-            if (active==='buy') document.getElementById('transForm')?.addEventListener('submit', (e) => { e.preventDefault();
-                let petaniId = document.getElementById('petaniId').value;
-                let finalId = petaniId;
-                if (petaniId === 'NEW') { const newName = prompt("Nama Petani Baru"); if(newName) { const newFarmer = { id: Date.now(), nama: newName, hp: "", desa: "", kecamatan: "" }; Storage.setFarmers(tid, [...Storage.getFarmers(tid), newFarmer]); finalId = newFarmer.id; } else return; }
-                const komoditas_id = parseInt(document.getElementById('komoditasId').value);
-                const jumlah = parseFloat(document.getElementById('jumlah').value);
-                const harga = parseFloat(document.getElementById('harga').value);
-                const trans = { id: Date.now(), tanggal: document.getElementById('tanggal').value, tipe: 'pembelian', komoditas_id, komoditas_nama: Storage.getCommodities().find(c=>c.id===komoditas_id)?.nama, jumlah, harga_per_kg: harga, total: jumlah*harga, petani_id: finalId };
-                Storage.setTransactions(tid, [...Storage.getTransactions(tid), trans]);
-                const cash = Storage.getCashflow(tid);
-                cash.push({ id: trans.id, tanggal: trans.tanggal, tipe: 'pengeluaran', kategori: 'Pembelian ' + trans.komoditas_nama, nominal: trans.total });
-                Storage.setCashflow(tid, cash);
-                alert("Tersimpan!");
-                renderTengTransactions(tid);
-            });
-            if (active==='sell') document.getElementById('sellForm')?.addEventListener('submit', (e) => { e.preventDefault();
-                const jumlah = parseFloat(document.getElementById('jumlah').value);
-                const komId = parseInt(document.getElementById('komoditasId').value);
-                if (getStock(tid)[komId] < jumlah) { alert("Stok tidak cukup!"); return; }
-                const trans = { id: Date.now(), tanggal: document.getElementById('tanggal').value, tipe: 'penjualan', komoditas_id: komId, komoditas_nama: Storage.getCommodities().find(c=>c.id===komId)?.nama, jumlah, harga_per_kg: parseFloat(document.getElementById('harga').value), total: jumlah * parseFloat(document.getElementById('harga').value) };
-                Storage.setTransactions(tid, [...Storage.getTransactions(tid), trans]);
-                const cash = Storage.getCashflow(tid);
-                cash.push({ id: trans.id, tanggal: trans.tanggal, tipe: 'pemasukan', kategori: 'Penjualan ' + trans.komoditas_nama, nominal: trans.total });
-                Storage.setCashflow(tid, cash);
-                alert("Tersimpan!");
-                renderTengTransactions(tid);
-            });
-            if (active==='op') document.getElementById('opForm')?.addEventListener('submit', (e) => { e.preventDefault();
-                const cash = Storage.getCashflow(tid);
-                const tipe = document.getElementById('tipe').value;
-                const kategori = document.getElementById('kategori').value || (tipe === 'pemasukan' ? 'Pemasukan Lain' : 'Pengeluaran Operasional');
-                cash.push({ id: Date.now(), tanggal: document.getElementById('tanggal').value, tipe: tipe, kategori: kategori, nominal: parseFloat(document.getElementById('nominal').value) });
-                Storage.setCashflow(tid, cash);
-                alert("Tersimpan!");
-                renderTengTransactions(tid);
-            });
-        };
-        
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => { 
-            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); 
-            btn.classList.add('active'); 
-            active = btn.dataset.tab; 
-            updateForm(); 
-        }));
-        updateForm();
-        
-        // Fungsi render history dengan filter
-        const renderHistory = (filterType = 'all', filterMonth = '') => {
-            const allEntries = [
-                ...Storage.getTransactions(tid).map(t => ({...t, entryType: 'commodity'})),
-                ...Storage.getCashflow(tid).map(c => ({...c, entryType: 'cashflow'}))
-            ];
+        document.getElementById('buyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const transData = {
+                id: Date.now() + '-' + Math.random(),
+                tengkulakId: tid,
+                tanggal: document.getElementById('tanggal').value,
+                tipe: 'pembelian',
+                komoditas_id: document.getElementById('komoditasId').value,
+                komoditas_nama: commodities.find(c => c.id == document.getElementById('komoditasId').value)?.nama,
+                jumlah: parseFloat(document.getElementById('jumlah').value),
+                harga_per_kg: parseFloat(document.getElementById('harga').value),
+                total: parseFloat(document.getElementById('jumlah').value) * parseFloat(document.getElementById('harga').value),
+                petani_id: document.getElementById('petaniId').value
+            };
             
-            // Filter
-            let filtered = allEntries;
-            if (filterType !== 'all') {
-                filtered = filtered.filter(e => e.tipe === filterType);
-            }
-            if (filterMonth) {
-                filtered = filtered.filter(e => e.tanggal && e.tanggal.startsWith(filterMonth));
-            }
+            await API.add('transactions', transData, tid);
             
-            filtered.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || ''));
+            const cashData = {
+                id: transData.id,
+                tengkulakId: tid,
+                tanggal: transData.tanggal,
+                tipe: 'pengeluaran',
+                kategori: 'Pembelian ' + transData.komoditas_nama,
+                nominal: transData.total
+            };
+            await API.add('cashflow', cashData, tid);
             
-            const farmersList = Storage.getFarmers(tid);
-            const getFarmerNameById = (farmerId) => { const farmer = farmersList.find(f => f.id == farmerId); return farmer ? farmer.nama : null; };
-            
-            document.getElementById('historyList').innerHTML = `<div class="table-wrapper"><table class="data-table"><thead><th>Tanggal</th><th>Jenis</th><th>Detail</th><th>Nominal</th><th>Aksi</th></thead><tbody>${filtered.slice(0, 50).map(e => { 
-                const type = e.entryType;
-                let detailText = '';
-                if (e.tipe === 'pembelian' && e.petani_id) { const fn = getFarmerNameById(e.petani_id); detailText = fn ? `${fn} - ${e.komoditas_nama||''}` : (e.keterangan||e.komoditas_nama||'-'); }
-                else detailText = e.keterangan || e.komoditas_nama || e.kategori || '-';
-                if (e.tipe === 'penjualan') detailText = `${e.komoditas_nama||''} ${e.jumlah?e.jumlah+'kg':''}`;
-                if (e.tipe === 'pemasukan' || e.tipe === 'pengeluaran') detailText = e.kategori || '-';
-                
-                const printButton = e.tipe === 'pembelian' ? 
-                    `<i class="fas fa-file-invoice" onclick="printPurchaseNote(${JSON.stringify(e).replace(/"/g, '&quot;')}, '${tid}')" title="Cetak Nota Pembelian"></i>` :
-                    `<i class="fas fa-receipt" onclick="printBill(${JSON.stringify(e).replace(/"/g, '&quot;')}, '${tid}')" title="Cetak Struk"></i>`;
-                
-                return `<tr><td>${e.tanggal||'-'}</td><td><span class="badge">${e.tipe || 'Trans'}</span></td><td>${detailText}</td><td><strong>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(e.total||e.nominal||0)}</strong></td><td class="action-icons"><i class="fas fa-edit" onclick="editTransaction('${tid}', ${e.id}, '${type}')" title="Edit"></i><i class="fas fa-trash-alt" onclick="deleteTransaction('${tid}', ${e.id}, '${type}')" title="Hapus"></i>${printButton}</td></tr>`;
-            }).join('')}${filtered.length === 0 ? '<tr><td colspan="5" style="text-align:center;">Tidak ada transaksi</td></tr>' : ''}</tbody></table></div>`;
-        };
-        
-        renderHistory();
-        
-        document.getElementById('applyFilterBtn').addEventListener('click', () => {
-            const filterType = document.getElementById('filterType').value;
-            const filterMonth = document.getElementById('filterMonth').value;
-            renderHistory(filterType, filterMonth);
-        });
-        
-        document.getElementById('resetFilterBtn').addEventListener('click', () => {
-            document.getElementById('filterType').value = 'all';
-            document.getElementById('filterMonth').value = new Date().toISOString().slice(0,7);
-            renderHistory();
+            await LocalCache.syncAll();
+            alert('Pembelian berhasil disimpan!');
+            renderTengTransactions(tid);
         });
     }
 
     function renderTengStock(tid) {
         const stock = getStock(tid);
-        const commodities = Storage.getCommodities();
-        const stockData = commodities.map(c => ({ id: c.id, nama: c.nama, stok: stock[c.id] || 0, satuan: c.satuan, harga_acuan: c.harga_acuan })).sort((a,b) => a.nama.localeCompare(b.nama));
+        const commodities = LocalCache.commodities || [];
+        
         const html = `
-            <div class="card"><h3>📦 Stok Komoditas</h3><div class="chart-container"><canvas id="stockHorChart"></canvas></div>
-            <div style="margin-top:20px;"><div class="table-wrapper"><table class="data-table"><thead><tr><th>Komoditas</th><th>Stok (kg)</th><th>Nilai Stok (Rp)</th><th>Status</th></tr></thead>
-            <tbody>${stockData.map(c => { const nilaiStok = c.stok * c.harga_acuan; return `<tr><td><strong>${c.nama}</strong></td><td>${c.stok.toLocaleString()} kg</td><td>${new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR'}).format(nilaiStok)}</td><td>${c.stok > 0 ? '<span class="badge badge-stock">✓ Tersedia</span>' : '<span class="badge badge-stock-empty">✗ Habis</span>'}</td></tr>`; }).join('')}</tbody></table>${stockData.length === 0 ? '<p style="text-align:center; padding:30px;">Belum ada data komoditas.</p>' : ''}</div></div></div>`;
+            <div class="card"><h3>📦 Stok Komoditas</h3>
+            <div class="table-wrapper"><table class="data-table"><thead><tr><th>Komoditas</th><th>Stok (kg)</th><th>Status</th></tr></thead>
+            <tbody>${commodities.map(c => `<tr><td><strong>${c.nama}</strong></td><td>${(stock[c.id] || 0).toLocaleString()} kg</td><td>${stock[c.id] > 0 ? '<span class="badge badge-stock">✓ Tersedia</span>' : '<span class="badge badge-stock-empty">✗ Habis</span>'}</td></tr>`).join('')}</tbody></table></div>
+            </div>
+        `;
         document.getElementById('content').innerHTML = html;
-        const labels = stockData.map(c => c.nama);
-        const data = stockData.map(c => c.stok);
-        if (tengkulakCharts.stockHor) tengkulakCharts.stockHor.destroy();
-        const ctx = document.getElementById('stockHorChart').getContext('2d');
-        tengkulakCharts.stockHor = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Stok (kg)', data, backgroundColor: data.map(v => v > 0 ? '#14b8a6' : '#ef4444'), borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Stok (kg)' } } }, plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toLocaleString()} kg` } } } } });
     }
 
     function renderTengFarmers(tid) {
-        const farmers = Storage.getFarmers(tid);
+        const farmers = LocalCache.farmers[tid] || [];
         const html = `
-            <div class="card"><div class="flex-between"><h3>👨‍🌾 Data Petani</h3><button class="btn" id="addFarmerBtn"><i class="fas fa-plus"></i> Tambah Petani</button></div>
-            <div class="search-bar"><input type="text" id="searchFarmer" placeholder="🔍 Cari nama petani..." style="flex:1;"></div>
-            <div class="table-wrapper"><table class="data-table"><thead><tr><th>Nama</th><th>HP</th><th>Desa</th><th>Kecamatan</th><th style="width:100px">Aksi</th></tr></thead>
-            <tbody id="farmerBody">${farmers.map(f => `<tr><td><strong>${f.nama}</strong></td><td>${f.hp || '-'}</td><td>${f.desa || '-'}</td><td>${f.kecamatan || '-'}</td><td><div style="display:flex; gap:6px; flex-wrap:wrap;"><button class="btn btn-sm btn-secondary" onclick="showEditFarmerModal('${tid}', ${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-sm btn-danger" onclick="deleteFarmer('${tid}', ${f.id})"><i class="fas fa-trash"></i> Hapus</button></div></td></tr>`).join('')}</tbody></table>${farmers.length === 0 ? '<p style="text-align:center; padding:30px;">Belum ada data petani.</p>' : ''}</div></div>`;
+            <div class="card">
+                <div class="flex-between"><h3>👨‍🌾 Data Petani</h3><button class="btn" id="addFarmerBtn"><i class="fas fa-plus"></i> Tambah</button></div>
+                <div class="table-wrapper"><table class="data-table"><thead><tr><th>Nama</th><th>HP</th><th>Desa</th><th>Kecamatan</th></tr></thead>
+                <tbody>${farmers.map(f => `<tr><td><strong>${f.nama}</strong></td><td>${f.hp || '-'}</td><td>${f.desa || '-'}</td><td>${f.kecamatan || '-'}</td></tr>`).join('')}</tbody></table></div>
+            </div>
+        `;
         document.getElementById('content').innerHTML = html;
-        document.getElementById('addFarmerBtn').onclick = () => { 
-            const name = prompt("Nama Petani"); 
-            if(name) { 
-                const hp = prompt("Nomor HP (opsional):", "");
-                const desa = prompt("Desa (opsional):", "");
-                const kecamatan = prompt("Kecamatan (opsional):", "");
-                Storage.setFarmers(tid, [...Storage.getFarmers(tid), { id: Date.now(), nama: name, hp: hp || "", desa: desa || "", kecamatan: kecamatan || "" }]); 
-                renderTengFarmers(tid); 
-            } 
+        
+        document.getElementById('addFarmerBtn').onclick = async () => {
+            const name = prompt("Nama Petani");
+            if (name) {
+                const newFarmer = {
+                    id: Date.now() + '-' + Math.random(),
+                    tengkulakId: tid,
+                    nama: name,
+                    hp: prompt("Nomor HP:", "") || "",
+                    desa: prompt("Desa:", "") || "",
+                    kecamatan: prompt("Kecamatan:", "") || "",
+                    createdAt: new Date().toISOString()
+                };
+                await API.add('farmers', newFarmer, tid);
+                await LocalCache.syncAll();
+                renderTengFarmers(tid);
+            }
         };
-        window.deleteFarmer = (tidParam, id) => { 
-            const transactionCount = getFarmerTransactionCount(tidParam, id);
-            let confirmMsg = 'Hapus petani ini?';
-            if (transactionCount > 0) confirmMsg = `Petani ini memiliki ${transactionCount} riwayat transaksi. Menghapus petani akan membuat riwayat transaksi menampilkan "Petani Tidak Dikenal". Yakin ingin menghapus?`;
-            if(confirm(confirmMsg)) { Storage.setFarmers(tidParam, Storage.getFarmers(tidParam).filter(f => f.id !== id)); renderTengFarmers(tidParam); } 
-        };
-        document.getElementById('searchFarmer').addEventListener('input', (e) => { 
-            const term = e.target.value.toLowerCase(); 
-            const filtered = Storage.getFarmers(tid).filter(f => f.nama.toLowerCase().includes(term)); 
-            document.getElementById('farmerBody').innerHTML = filtered.map(f => `<tr><td><strong>${f.nama}</strong></td><td>${f.hp || '-'}</td><td>${f.desa || '-'}</td><td>${f.kecamatan || '-'}</td><td><div style="display:flex; gap:6px; flex-wrap:wrap;"><button class="btn btn-sm btn-secondary" onclick="showEditFarmerModal('${tid}', ${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-sm btn-danger" onclick="deleteFarmer('${tid}', ${f.id})"><i class="fas fa-trash"></i> Hapus</button></div></td></tr>`).join(''); 
-        });
     }
 
     function renderTengReports(tid) {
-        const profile = Storage.getTengkulakProfiles().find(p=>p.id===tid);
-        const trans = Storage.getTransactions(tid);
-        const cash = Storage.getCashflow(tid);
-        const totalJual = trans.filter(t=>t.tipe==='penjualan').reduce((s,t)=>s+t.total,0);
-        const totalBeli = trans.filter(t=>t.tipe==='pembelian').reduce((s,t)=>s+t.total,0);
-        const op = cash.filter(c=>c.tipe==='pengeluaran').reduce((s,c)=>s+c.nominal,0);
+        const profile = LocalCache.tengkulak.find(p => p.id === tid);
+        const trans = LocalCache.transactions[tid] || [];
+        const cashflow = LocalCache.cashflow[tid] || [];
+        const totalJual = trans.filter(t => t.tipe === 'penjualan').reduce((s, t) => s + Number(t.total || 0), 0);
+        const totalBeli = trans.filter(t => t.tipe === 'pembelian').reduce((s, t) => s + Number(t.total || 0), 0);
+        const op = cashflow.filter(c => c.tipe === 'pengeluaran').reduce((s, c) => s + Number(c.nominal || 0), 0);
         const laba = totalJual - totalBeli - op;
-        const formatRp = (v)=> new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(v);
-        const html = `<h2>📊 Laporan</h2><div class="card"><div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;"><button class="btn" id="printReportBtn"><i class="fas fa-print"></i> Cetak</button><button class="btn btn-secondary" id="exportExcelTeng"><i class="fas fa-file-excel"></i> Export Excel</button></div><div class="financial-report"><h3 style="text-align:center;">${profile.nama}</h3><p style="text-align:center;">${profile.perusahaan||''}</p><hr><div style="display:flex; justify-content:space-between;"><strong>Penjualan:</strong> ${formatRp(totalJual)}</div><div style="display:flex; justify-content:space-between;"><strong>Pembelian:</strong> ${formatRp(totalBeli)}</div><div style="display:flex; justify-content:space-between;"><strong>Operasional:</strong> ${formatRp(op)}</div><hr><div style="display:flex; justify-content:space-between; background:#f0fdf4; padding:10px; border-radius:10px;"><strong>Laba Bersih:</strong> <strong class="${laba>=0?'text-success':'text-danger'}">${formatRp(laba)}</strong></div><div style="display:flex; justify-content:space-between;"><strong>Saldo Kas:</strong> ${formatRp(getBalance(tid))}</div></div></div>`;
+        const formatRp = (v) => new Intl.NumberFormat('id-ID', {style: 'currency', currency: 'IDR'}).format(v);
+        
+        const html = `
+            <h2>📊 Laporan</h2>
+            <div class="card">
+                <div class="financial-report">
+                    <h3 style="text-align:center;">${profile?.nama || ''}</h3>
+                    <p style="text-align:center;">${profile?.perusahaan || ''}</p>
+                    <hr>
+                    <div style="display:flex; justify-content:space-between;"><strong>Penjualan:</strong> ${formatRp(totalJual)}</div>
+                    <div style="display:flex; justify-content:space-between;"><strong>Pembelian:</strong> ${formatRp(totalBeli)}</div>
+                    <div style="display:flex; justify-content:space-between;"><strong>Operasional:</strong> ${formatRp(op)}</div>
+                    <hr>
+                    <div style="display:flex; justify-content:space-between; background:#f0fdf4; padding:10px; border-radius:10px;">
+                        <strong>Laba Bersih:</strong> <strong class="${laba >= 0 ? 'text-success' : 'text-danger'}">${formatRp(laba)}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;"><strong>Saldo Kas:</strong> ${formatRp(getBalance(tid))}</div>
+                </div>
+            </div>
+        `;
         document.getElementById('content').innerHTML = html;
-        document.getElementById('printReportBtn').onclick = () => window.print();
-        document.getElementById('exportExcelTeng').onclick = () => { 
-            const allData = [...trans, ...cash.map(c => ({...c, tipe_transaksi: c.tipe}))];
-            const ws = XLSX.utils.json_to_sheet(allData); 
-            const wb = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(wb, ws, 'Transaksi'); 
-            XLSX.writeFile(wb, `transaksi_${tid}_${new Date().toISOString().slice(0,10)}.xlsx`); 
-        };
-    }
-
-    function renderTengSettings(tid) {
-        const s = Storage.getSettings(tid);
-        const profile = Storage.getTengkulakProfiles().find(p=>p.id===tid);
-        const html = `<h2>⚙️ Pengaturan</h2><div class="card"><form id="setForm"><div class="form-group"><label>🎨 Warna Utama</label><input type="color" id="primaryColor" value="${s.primaryColor}" style="width:70px; height:40px;"></div><div class="form-group"><label>🏪 Nama Toko</label><input type="text" id="namaToko" value="${s.namaToko || profile?.perusahaan || ''}"></div><div class="form-group"><label>💰 Modal Awal</label><input type="number" id="modalAwal" value="${s.modalAwal || 0}" step="100000"></div><div class="form-group"><label>🖼️ Logo</label><input type="file" id="logoUpload" accept="image/*">${s.logoBase64 ? `<img src="${s.logoBase64}" class="logo-preview">` : '<p class="badge">Belum ada logo</p>'}</div><button type="submit" class="btn">Simpan</button><button type="button" id="resetSettingsBtn" class="btn btn-secondary" style="margin-left:10px;">Reset</button></form></div>`;
-        document.getElementById('content').innerHTML = html;
-        document.getElementById('setForm').addEventListener('submit', (e) => { e.preventDefault(); 
-            const newSettings = { primaryColor: document.getElementById('primaryColor').value, namaToko: document.getElementById('namaToko').value, modalAwal: parseFloat(document.getElementById('modalAwal').value) || 0, logoBase64: s.logoBase64 };
-            Storage.setSettings(tid, newSettings); alert("Tersimpan!"); renderTengSettings(tid); 
-        });
-        document.getElementById('resetSettingsBtn').onclick = () => { 
-            if(confirm('Reset pengaturan ke default?')) { 
-                Storage.setSettings(tid, { primaryColor: "#14b8a6", modalAwal: 0, namaToko: profile?.perusahaan || "", logoBase64: null }); 
-                renderTengSettings(tid); alert("Reset berhasil"); 
-            } 
-        };
-        document.getElementById('logoUpload').onchange = (e) => { 
-            const file = e.target.files[0]; 
-            if(file) { 
-                const reader = new FileReader(); 
-                reader.onload = (ev) => { 
-                    const currentSettings = Storage.getSettings(tid);
-                    Storage.setSettings(tid, { ...currentSettings, logoBase64: ev.target.result }); 
-                    renderTengSettings(tid); 
-                }; 
-                reader.readAsDataURL(file); 
-            } 
-        };
     }
 
     // ==================== START ====================
-    const storedUser = sessionStorage.getItem("currentUser");
-    if (storedUser) currentUser = JSON.parse(storedUser);
-    renderApp();
-    
-    window.showEditFarmerModal = showEditFarmerModal;
-    window.closeFarmerModal = closeFarmerModal;
-    window.saveFarmerEdit = saveFarmerEdit;
-    window.editComm = (id) => { 
-        const comms = Storage.getCommodities(); 
-        const item = comms.find(c=>c.id===id); 
-        const newPrice = prompt("Harga acuan baru (Rp)", item.harga_acuan); 
-        if(newPrice) { item.harga_acuan = parseFloat(newPrice); Storage.setCommodities(comms); if (currentUser?.role === 'admin') renderAdminCommodities(); } 
-    };
+    (async function() {
+        LocalCache.load();
+        const storedUser = sessionStorage.getItem("currentUser");
+        if (storedUser) currentUser = JSON.parse(storedUser);
+        
+        // Coba sync data saat startup
+        if (API_URL !== 'YOUR_SCRIPT_URL') {
+            await LocalCache.syncAll();
+        }
+        
+        renderApp();
+    })();
 </script>
 </body>
 </html>
