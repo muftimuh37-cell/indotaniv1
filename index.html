@@ -11,23 +11,47 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        /* ===== SAME CSS AS BEFORE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f5f7fb; color: #1e293b; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .app { display: flex; min-height: 100vh; background: #f5f7fb; position: relative; }
-        .sidebar { width: 280px; background: linear-gradient(180deg, #0f172a 0%, #0a0f1c 100%); color: #e2e8f0; position: fixed; height: 100vh; overflow-y: auto; transition: transform 0.3s; z-index: 1000; box-shadow: 4px 0 20px rgba(0,0,0,0.1); }
+        .sidebar { 
+            width: 280px; 
+            background: linear-gradient(180deg, #0f172a 0%, #0a0f1c 100%);
+            color: #e2e8f0; 
+            position: fixed; 
+            height: 100vh; 
+            overflow-y: auto; 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 1000; 
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        }
         .logo-area { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; text-align: center; }
         .logo-area h2 { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #2dd4bf, #14b8a6); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .logo-area p { font-size: 0.65rem; color: #94a3b8; margin-top: 6px; }
         .nav-menu ul { list-style: none; padding: 0 12px; }
-        .nav-menu li { padding: 10px 14px; margin: 3px 0; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 0.85rem; color: #cbd5e1; }
+        .nav-menu li { 
+            padding: 10px 14px; margin: 3px 0; border-radius: 12px; cursor: pointer; transition: all 0.2s; 
+            display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 0.85rem; color: #cbd5e1;
+        }
         .nav-menu li i { width: 22px; font-size: 1rem; }
         .nav-menu li:hover, .nav-menu li.active { background: rgba(20, 184, 166, 0.15); color: #2dd4bf; }
         .main-content { flex: 1; margin-left: 280px; background: #f5f7fb; min-height: 100vh; width: calc(100% - 280px); }
-        .topbar { background: #ffffff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 10px; }
+        .topbar { 
+            background: #ffffff; 
+            padding: 12px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #e2e8f0; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            flex-wrap: wrap;
+            gap: 10px;
+        }
         .user-info { display: flex; align-items: center; gap: 12px; }
         .avatar { width: 38px; height: 38px; background: linear-gradient(135deg, #14b8a6, #0d9488); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem; }
         .content { padding: 16px; }
@@ -41,17 +65,32 @@
         .btn { background: #14b8a6; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn:hover { background: #0d9488; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3); }
         .btn-secondary { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
+        .btn-secondary:hover { background: #e2e8f0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .btn-danger { background: #ef4444; }
         .btn-danger:hover { background: #dc2626; }
         .btn-sm { padding: 5px 12px; font-size: 0.7rem; }
+        .btn-print-all { background: #3b82f6; margin-left: 10px; }
+        .btn-print-all:hover { background: #2563eb; }
+        
         .table-wrapper { overflow-x: auto; width: 100%; border-radius: 12px; }
         table.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 100%; }
         table.data-table th, table.data-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         table.data-table th { background: #f8fafc; font-weight: 600; color: #334155; font-size: 0.8rem; }
         table.data-table tbody tr:hover { background: #fafcff; }
+        
+        @media (max-width: 768px) {
+            table.data-table th, table.data-table td { padding: 8px 8px; font-size: 0.75rem; }
+            table.data-table { min-width: 500px; }
+            .table-wrapper { margin: 0 -4px; padding: 0 4px; }
+        }
+        @media (max-width: 480px) {
+            table.data-table th, table.data-table td { padding: 6px 6px; font-size: 0.7rem; }
+            table.data-table { min-width: 450px; }
+        }
+        
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.8rem; color: #334155; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; font-size: 0.85rem; transition: all 0.2s; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; font-size: 0.85rem; transition: all 0.2s; -webkit-appearance: none; appearance: none; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #fff; padding: 24px; border-radius: 24px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; margin: 16px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
@@ -68,6 +107,7 @@
         .tab-btn { background: none; border: none; padding: 6px 18px; cursor: pointer; font-weight: 600; border-radius: 40px; font-size: 0.85rem; transition: all 0.2s; }
         .tab-btn.active { background: #14b8a6; color: white; }
         .financial-report { font-family: 'Inter', monospace; background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; }
+        .logo-preview { max-width: 60px; margin-top: 10px; border-radius: 12px; }
         h2 { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
         h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #1e293b; }
         .text-success { color: #10b981; }
@@ -77,22 +117,51 @@
         .action-icons i { cursor: pointer; font-size: 1rem; transition: transform 0.2s; padding: 5px; color: #64748b; }
         .action-icons i:hover { transform: scale(1.1); color: #14b8a6; }
         .action-icons i.fa-trash-alt:hover { color: #ef4444; }
+        .action-icons i.fa-print:hover, .action-icons i.fa-file-invoice:hover, .action-icons i.fa-list:hover { color: #3b82f6; }
         .warning-box { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 12px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        
         .login-footer { margin-top: 24px; text-align: center; font-size: 0.75rem; color: #94a3b8; }
+        .login-footer a { color: #14b8a6; text-decoration: none; }
+        .login-footer a:hover { text-decoration: underline; }
+        
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+        .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.8rem; }
+        
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .spinner { width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top-color: #14b8a6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .sync-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; background: #e2e8f0; }
         .sync-status.online { background: #dcfce7; color: #15803d; }
         .sync-status.offline { background: #fee2e2; color: #991b1b; }
+        
         @media (max-width: 768px) { 
             .sidebar { transform: translateX(-100%); width: 260px; } 
             .sidebar.open { transform: translateX(0); } 
             .main-content { margin-left: 0; width: 100%; } 
-            .dashboard-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
             .content { padding: 12px; }
             .menu-toggle-btn { display: block; }
+            .topbar { padding: 10px 16px; }
+            .stat-card .value { font-size: 1.3rem; }
+            .btn { padding: 7px 14px; font-size: 0.75rem; }
+            .card { padding: 14px; margin-bottom: 16px; }
+            .modal-content { padding: 20px; width: 95%; }
+            .chart-container { height: 200px; }
+            h2 { font-size: 1.2rem; margin-bottom: 12px; }
+            .flex-between { flex-direction: column; align-items: stretch; }
+            .flex-between .btn { align-self: flex-start; }
+            .action-icons i { font-size: 0.9rem; padding: 3px; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
         }
+        
+        @media (max-width: 480px) {
+            .stat-card h3 { font-size: 0.65rem; }
+            .stat-card .value { font-size: 1.1rem; }
+            .btn-sm { padding: 4px 10px; font-size: 0.65rem; }
+            .badge { font-size: 0.6rem; padding: 2px 8px; }
+            .action-icons i { font-size: 0.9rem; margin: 0 2px; }
+        }
+        
         input, select, textarea { font-size: 16px !important; }
     </style>
 </head>
@@ -101,8 +170,8 @@
 
 <script>
     // ==================== KONFIGURASI GOOGLE SHEETS API ====================
-    // GANTI URL INI DENGAN URL DEPLOYMENT ANDA!
-    const API_URL = https://script.google.com/macros/s/AKfycbyARty1OodYDGMa776nqa5p5f3k47K3rThsVrI5PgWtfFqAIk0R_MD0CC3l34pZIh2wlA/exec'; // <-- GANTI DI SINI!
+    // ⚠️⚠️⚠️ GANTI URL INI DENGAN URL DEPLOYMENT ANDA! ⚠️⚠️⚠️
+    const API_URL = 'https://script.google.com/macros/s/AKfycby8fYT6ArcZFI60Zl-wWvt3mMD_jiBMNLxKFqC14zJ-Ih4ovRa_450ffwxb3VcoUjjvWw/exec'; // <-- GANTI DI SINI!
     
     // ==================== API SERVICE ====================
     const API = {
@@ -149,7 +218,7 @@
         }
     };
 
-    // ==================== STORAGE (CACHE LOKAL UNTUK OFFLINE) ====================
+    // ==================== STORAGE (CACHE LOKAL) ====================
     const LocalCache = {
         users: [],
         tengkulak: [],
@@ -194,19 +263,15 @@
         async syncAll() {
             showLoading(true);
             try {
-                // Sync users
                 const usersRes = await API.getAll('users');
                 if (usersRes.success) this.users = usersRes.data;
                 
-                // Sync tengkulak
                 const tengkulakRes = await API.getAll('tengkulak');
                 if (tengkulakRes.success) this.tengkulak = tengkulakRes.data;
                 
-                // Sync commodities
                 const commRes = await API.getAll('commodities');
                 if (commRes.success) this.commodities = commRes.data;
                 
-                // Sync data per tengkulak
                 for (const t of this.tengkulak) {
                     const dataRes = await API.getTengkulakData(t.id);
                     if (dataRes.success) {
@@ -259,12 +324,171 @@
         return cashflow.reduce((sum, cf) => sum + (cf.tipe === 'pemasukan' ? Number(cf.nominal) : -Number(cf.nominal)), 0);
     }
 
+    function getAggregateStats() {
+        let totalFarmers = 0, totalTransactions = 0, totalVolume = 0, totalCash = 0;
+        LocalCache.tengkulak.forEach(t => {
+            const farmers = LocalCache.farmers[t.id] || [];
+            const trans = LocalCache.transactions[t.id] || [];
+            totalFarmers += farmers.length;
+            totalTransactions += trans.length;
+            totalVolume += trans.reduce((s, t) => s + Number(t.jumlah || 0), 0);
+            totalCash += getBalance(t.id);
+        });
+        return { totalFarmers, totalTransactions, totalVolume, totalCash };
+    }
+
+    function getMonthsLabels() { return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; }
+
     function getFarmerName(tid, farmerId) {
         const farmer = (LocalCache.farmers[tid] || []).find(f => f.id == farmerId);
         return farmer ? farmer.nama : 'Petani Tidak Dikenal';
     }
 
-    function getMonthsLabels() { return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; }
+    function getFarmerDetails(tid, farmerId) {
+        return (LocalCache.farmers[tid] || []).find(f => f.id == farmerId) || null;
+    }
+
+    function numberToWords(num) {
+        const ones = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
+        const teens = ['sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas', 'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas'];
+        const tens = ['', '', 'dua puluh', 'tiga puluh', 'empat puluh', 'lima puluh', 'enam puluh', 'tujuh puluh', 'delapan puluh', 'sembilan puluh'];
+        if (num === 0) return 'nol';
+        function convert(n) {
+            if (n < 10) return ones[n];
+            if (n < 20) return teens[n - 10];
+            if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+            if (n < 1000) { const hundred = Math.floor(n / 100); const remainder = n % 100; let result = (hundred === 1 ? 'seratus' : ones[hundred] + ' ratus'); if (remainder > 0) result += ' ' + convert(remainder); return result; }
+            if (n < 1000000) { const thousand = Math.floor(n / 1000); const remainder = n % 1000; let result = (thousand === 1 ? 'seribu' : convert(thousand) + ' ribu'); if (remainder > 0) result += ' ' + convert(remainder); return result; }
+            if (n < 1000000000) { const million = Math.floor(n / 1000000); const remainder = n % 1000000; let result = convert(million) + ' juta'; if (remainder > 0) result += ' ' + convert(remainder); return result; }
+            return '';
+        }
+        let result = convert(Math.floor(num));
+        return result.charAt(0).toUpperCase() + result.slice(1);
+    }
+
+    // ==================== FUNGSI CETAK ====================
+    window.printBill = function(trans, tid) {
+        let farmerName = '';
+        let farmerDetails = null;
+        if (trans.tipe === 'pembelian' && trans.petani_id && tid) {
+            farmerName = getFarmerName(tid, trans.petani_id);
+            farmerDetails = getFarmerDetails(tid, trans.petani_id);
+        }
+        const profile = LocalCache.tengkulak.find(p => p.id === tid);
+        const tokoName = profile?.perusahaan || 'TaniTrade';
+        const tanggal = trans.tanggal ? new Date(trans.tanggal).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleString('id-ID');
+        
+        const content = `
+            <html><head><title>Struk Transaksi</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>body{font-family:monospace;padding:20px;background:#f5f5f5;display:flex;justify-content:center;}.struk{max-width:380px;background:white;padding:25px;border-radius:12px;}.header{text-align:center;border-bottom:2px dashed #14b8a6;padding-bottom:15px;}.item{display:flex;justify-content:space-between;margin:10px 0;}.total{font-weight:bold;border-top:2px dashed #14b8a6;margin-top:15px;padding-top:15px;}.footer{text-align:center;margin-top:25px;font-size:0.8rem;color:#777;}.btn{padding:10px 20px;background:#14b8a6;color:white;border:none;border-radius:5px;cursor:pointer;}@media print{body{background:white;}.no-print{display:none;}}</style></head>
+            <body><div class="struk">
+                <div class="header"><h3 style="color:#14b8a6;">${tokoName}</h3><p>${tanggal}</p><p>No: ${trans.id}</p></div>
+                <div class="item"><strong>Jenis:</strong> <span>${trans.tipe === 'pembelian' ? 'PEMBELIAN' : 'PENJUALAN'}</span></div>
+                ${farmerName ? `<div class="item"><strong>Petani:</strong> <span>${farmerName}</span></div>` : ''}
+                ${trans.komoditas_nama ? `<div class="item"><strong>Komoditas:</strong> <span>${trans.komoditas_nama}</span></div>` : ''}
+                ${trans.jumlah ? `<div class="item"><strong>Jumlah:</strong> <span>${Number(trans.jumlah).toLocaleString()} kg</span></div>` : ''}
+                ${trans.harga_per_kg ? `<div class="item"><strong>Harga/kg:</strong> <span>Rp ${Number(trans.harga_per_kg).toLocaleString()}</span></div>` : ''}
+                <div class="item total"><strong>TOTAL:</strong> <span>Rp ${Number(trans.total || trans.nominal || 0).toLocaleString()}</span></div>
+                <div class="footer">Terima kasih<br><small>Simpan sebagai bukti</small></div>
+                <div class="no-print" style="text-align:center;margin-top:20px;"><button class="btn" onclick="window.print();">Cetak</button><button class="btn" style="background:#64748b;margin-left:10px;" onclick="window.close();">Tutup</button></div>
+            </div><script>setTimeout(()=>window.print(),300);<\/script></body></html>
+        `;
+        const win = window.open('', '_blank');
+        win.document.write(content);
+        win.document.close();
+    };
+
+    window.printAllTransactions = function(tid) {
+        const profile = LocalCache.tengkulak.find(p => p.id === tid);
+        const tokoName = profile?.perusahaan || 'TaniTrade';
+        const transactions = LocalCache.transactions[tid] || [];
+        const cashflows = LocalCache.cashflow[tid] || [];
+        const farmers = LocalCache.farmers[tid] || [];
+        
+        const allEntries = [...transactions.map(t => ({...t, entryType: 'commodity'})), ...cashflows.map(c => ({...c, entryType: 'cashflow'}))];
+        allEntries.sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || ''));
+        
+        const formatRp = (val) => 'Rp ' + Number(val).toLocaleString('id-ID');
+        
+        const content = `
+            <html><head><title>Daftar Transaksi - ${tokoName}</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>body{font-family:Inter,Arial,sans-serif;padding:20px;background:#f5f5f5;}.container{max-width:1200px;margin:0 auto;background:white;padding:30px;border-radius:12px;}.header{text-align:center;margin-bottom:30px;border-bottom:3px solid #14b8a6;}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px;}.summary-card{background:#f8fafc;padding:15px;border-radius:8px;border-left:4px solid #14b8a6;}table{width:100%;border-collapse:collapse;}th{background:#14b8a6;color:white;padding:12px;}td{padding:10px;border-bottom:1px solid #e2e8f0;}.badge{padding:3px 10px;border-radius:20px;font-size:0.7rem;}.badge-beli{background:#dcfce7;color:#15803d;}.badge-jual{background:#fee2e2;color:#991b1b;}.btn{padding:10px 20px;background:#14b8a6;color:white;border:none;border-radius:5px;cursor:pointer;}@media print{body{background:white;}.no-print{display:none;}}</style></head>
+            <body><div class="container">
+                <div class="header"><h1>${tokoName}</h1><h2>DAFTAR RIWAYAT TRANSAKSI</h2><p>Dicetak: ${new Date().toLocaleString('id-ID')}</p></div>
+                <div class="summary">
+                    <div class="summary-card"><h4>Total Pembelian</h4><div class="value">${formatRp(transactions.filter(t=>t.tipe==='pembelian').reduce((s,t)=>s+Number(t.total||0),0))}</div></div>
+                    <div class="summary-card"><h4>Total Penjualan</h4><div class="value">${formatRp(transactions.filter(t=>t.tipe==='penjualan').reduce((s,t)=>s+Number(t.total||0),0))}</div></div>
+                    <div class="summary-card"><h4>Total Operasional</h4><div class="value">${formatRp(cashflows.filter(c=>c.tipe==='pengeluaran').reduce((s,c)=>s+Number(c.nominal||0),0))}</div></div>
+                    <div class="summary-card"><h4>Saldo Kas</h4><div class="value">${formatRp(getBalance(tid))}</div></div>
+                </div>
+                <table><thead><tr><th>No</th><th>Tanggal</th><th>Jenis</th><th>Petani/Pihak</th><th>Komoditas/Kategori</th><th>Jumlah</th><th>Total</th></tr></thead>
+                <tbody>${allEntries.map((e, idx) => {
+                    let jenis = e.tipe || 'Trans';
+                    let pihak = e.petani_id ? getFarmerName(tid, e.petani_id) : '-';
+                    let komoditas = e.komoditas_nama || e.kategori || '-';
+                    let jumlah = e.jumlah ? Number(e.jumlah).toLocaleString() + ' kg' : '-';
+                    let total = e.total || e.nominal || 0;
+                    return `<tr><td>${idx+1}</td><td>${e.tanggal||'-'}</td><td><span class="badge ${e.tipe==='pembelian'?'badge-beli':'badge-jual'}">${jenis}</span></td><td>${pihak}</td><td>${komoditas}</td><td>${jumlah}</td><td><strong>${formatRp(total)}</strong></td></tr>`;
+                }).join('')}</tbody></table>
+                <div class="no-print" style="text-align:center;margin-top:20px;"><button class="btn" onclick="window.print();">Cetak Daftar</button><button class="btn" style="background:#64748b;margin-left:10px;" onclick="window.close();">Tutup</button></div>
+            </div><script>setTimeout(()=>window.print(),300);<\/script></body></html>
+        `;
+        const win = window.open('', '_blank');
+        win.document.write(content);
+        win.document.close();
+    };
+
+    // ==================== GLOBAL FUNCTIONS ====================
+    window.deleteTransaction = async function(tid, id, type) {
+        if (!confirm('Hapus transaksi ini?')) return;
+        if (type === 'commodity') {
+            await API.delete('transactions', id, tid);
+            await API.delete('cashflow', id, tid);
+        } else {
+            await API.delete('cashflow', id, tid);
+        }
+        await LocalCache.syncAll();
+        if (currentUser?.role === 'tengkulak') renderTengTransactions(tid);
+        else renderAdminContent();
+    };
+
+    // ==================== MODAL EDIT PETANI ====================
+    let currentEditFarmerId = null, currentEditTid = null;
+
+    function showEditFarmerModal(tid, farmer) {
+        currentEditFarmerId = farmer.id; currentEditTid = tid;
+        const modal = document.getElementById('farmerModal');
+        if (!modal) return;
+        document.getElementById('edit_nama').value = farmer.nama || '';
+        document.getElementById('edit_hp').value = farmer.hp || '';
+        document.getElementById('edit_desa').value = farmer.desa || '';
+        document.getElementById('edit_kecamatan').value = farmer.kecamatan || '';
+        modal.style.display = 'flex';
+    }
+
+    function closeFarmerModal() {
+        const modal = document.getElementById('farmerModal');
+        if (modal) modal.style.display = 'none';
+        currentEditFarmerId = null; currentEditTid = null;
+    }
+
+    async function saveFarmerEdit() {
+        if (!currentEditTid || !currentEditFarmerId) return;
+        const newNama = document.getElementById('edit_nama').value.trim();
+        if (!newNama) { alert('Nama harus diisi!'); return; }
+        const farmer = (LocalCache.farmers[currentEditTid] || []).find(f => f.id == currentEditFarmerId);
+        if (farmer) {
+            farmer.nama = newNama;
+            farmer.hp = document.getElementById('edit_hp').value.trim();
+            farmer.desa = document.getElementById('edit_desa').value.trim();
+            farmer.kecamatan = document.getElementById('edit_kecamatan').value.trim();
+            await API.update('farmers', currentEditFarmerId, farmer, currentEditTid);
+            await LocalCache.syncAll();
+            alert('Data petani diperbarui.');
+            closeFarmerModal();
+            if (currentUser?.role === 'tengkulak' && currentTengMenu === 'farmers') renderTengFarmers(currentEditTid);
+        }
+    }
 
     // ==================== AUTH ====================
     let currentUser = null;
@@ -274,63 +498,35 @@
         await LocalCache.syncAll();
         const user = LocalCache.users.find(u => u.username === username && u.password === password);
         showLoading(false);
-        
-        if (user) { 
-            currentUser = user; 
-            sessionStorage.setItem("currentUser", JSON.stringify(user)); 
-            renderApp(); 
-        } else {
-            alert("Username atau password salah!");
-        }
+        if (user) { currentUser = user; sessionStorage.setItem("currentUser", JSON.stringify(user)); renderApp(); } 
+        else alert("Username atau password salah!");
     }
     
-    function logout() { 
-        currentUser = null; 
-        sessionStorage.removeItem("currentUser"); 
-        renderApp(); 
-    }
+    function logout() { currentUser = null; sessionStorage.removeItem("currentUser"); renderApp(); }
 
     // ==================== RENDER UTAMA ====================
     let adminCharts = {}, tengkulakCharts = {};
     let currentAdminMenu = "dashboard", currentTengMenu = "dashboard";
 
     async function renderApp() {
-        if (!currentUser) { 
-            renderLogin(); 
-            return; 
-        }
+        if (!currentUser) { renderLogin(); return; }
         if (currentUser.role === "admin") renderAdminApp();
         else renderTengkulakApp();
     }
 
     function renderLogin() {
         document.getElementById("appRoot").innerHTML = `
-            <div class="login-container">
-                <div class="login-card">
-                    <h2 style="text-align:center;">🌾 TaniTrade Pro</h2>
-                    <p style="text-align:center; color:#64748b; margin-bottom:24px;">Platform Komoditas Nasional</p>
-                    <form id="loginForm">
-                        <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Masukkan username" required></div>
-                        <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Masukkan password" required></div>
-                        <button type="submit" class="btn" style="width:100%; justify-content:center;">Masuk</button>
-                    </form>
-                    <div class="login-footer">
-                        <p>🔐 Data tersimpan di Google Sheets</p>
-                        <p style="margin-top: 8px;" id="syncStatus">Memuat data...</p>
-                    </div>
-                </div>
-            </div>
+            <div class="login-container"><div class="login-card">
+                <h2 style="text-align:center;">🌾 TaniTrade Pro</h2><p style="text-align:center;color:#64748b;margin-bottom:24px;">Platform Komoditas Nasional</p>
+                <form id="loginForm">
+                    <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Masukkan username" required></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Masukkan password" required></div>
+                    <button type="submit" class="btn" style="width:100%;justify-content:center;">Masuk</button>
+                </form>
+                <div class="login-footer"><p>🔐 Data tersimpan di Google Sheets</p><p style="margin-top:8px;" id="syncStatus">${LocalCache.lastSync ? '✅ Data tersedia' : 'Memuat data...'}</p></div>
+            </div></div>
         `;
-        document.getElementById("loginForm").addEventListener("submit", (e) => { 
-            e.preventDefault(); 
-            login(document.getElementById("username").value, document.getElementById("password").value); 
-        });
-        
-        // Cek koneksi
-        LocalCache.load();
-        if (LocalCache.lastSync) {
-            document.getElementById("syncStatus").innerHTML = `✅ Data tersedia (sync: ${new Date(LocalCache.lastSync).toLocaleString('id-ID')})`;
-        }
+        document.getElementById("loginForm").addEventListener("submit", (e) => { e.preventDefault(); login(document.getElementById("username").value, document.getElementById("password").value); });
     }
 
     // =============== ADMIN MODULE ===============
@@ -338,8 +534,7 @@
         const root = document.getElementById("appRoot");
         root.innerHTML = `
             <div class="app">
-                <aside class="sidebar" id="sidebar">
-                    <div class="logo-area"><h2>TaniTrade Pro</h2><p>Command Center</p></div>
+                <aside class="sidebar" id="sidebar"><div class="logo-area"><h2>TaniTrade Pro</h2><p>Command Center</p></div>
                     <nav class="nav-menu"><ul>
                         <li data-menu="dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard</li>
                         <li data-menu="tengkulak"><i class="fas fa-store"></i> Data Tengkulak</li>
@@ -347,21 +542,12 @@
                         <li data-menu="userManagement"><i class="fas fa-users-gear"></i> Manajemen User</li>
                         <li data-menu="settings"><i class="fas fa-sliders-h"></i> Pengaturan</li>
                     </ul></nav>
-                    <div style="padding:16px; text-align:center; font-size:0.7rem; color:#64748b;">
-                        <span class="sync-status online" id="syncBadge">☁️ Cloud</span>
-                    </div>
+                    <div style="padding:16px;text-align:center;"><span class="sync-status online">☁️ Cloud</span></div>
                 </aside>
                 <main class="main-content">
-                    <header class="topbar">
-                        <button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <button class="btn btn-sm btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sync</button>
-                        </div>
-                        <div class="user-info">
-                            <span>Admin: ${currentUser.username}</span>
-                            <div class="avatar">AD</div>
-                            <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
-                        </div>
+                    <header class="topbar"><button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+                        <div><button class="btn btn-sm btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sync</button></div>
+                        <div class="user-info"><span>Admin: ${currentUser.username}</span><div class="avatar">AD</div><button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button></div>
                     </header>
                     <div class="content" id="content"></div>
                 </main>
@@ -382,10 +568,9 @@
         showLoading(true);
         await LocalCache.syncAll();
         showLoading(false);
-        alert('Data berhasil disinkronkan dengan Google Sheets!');
+        alert('Data berhasil disinkronkan!');
         renderAdminContent();
     }
-
     window.syncData = syncData;
 
     function renderAdminContent() {
@@ -397,61 +582,37 @@
     }
 
     function renderAdminDashboard() {
-        const totalFarmers = Object.values(LocalCache.farmers).flat().length;
-        const totalTransactions = Object.values(LocalCache.transactions).flat().length;
-        const totalVolume = Object.values(LocalCache.transactions).flat().reduce((s, t) => s + Number(t.jumlah || 0), 0);
-        const totalCash = LocalCache.tengkulak.reduce((s, t) => s + getBalance(t.id), 0);
-        
+        const stats = getAggregateStats();
         const html = `
             <div class="dashboard-grid">
-                <div class="stat-card"><i class="fas fa-user-friends"></i><h3>Total Petani</h3><div class="value">${totalFarmers}</div></div>
-                <div class="stat-card"><i class="fas fa-exchange-alt"></i><h3>Total Transaksi</h3><div class="value">${totalTransactions}</div></div>
-                <div class="stat-card"><i class="fas fa-weight-hanging"></i><h3>Volume (kg)</h3><div class="value">${totalVolume.toLocaleString()}</div></div>
-                <div class="stat-card"><i class="fas fa-coins"></i><h3>Total Cashflow</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(totalCash)}</div></div>
+                <div class="stat-card"><i class="fas fa-user-friends"></i><h3>Total Petani</h3><div class="value">${stats.totalFarmers}</div></div>
+                <div class="stat-card"><i class="fas fa-exchange-alt"></i><h3>Total Transaksi</h3><div class="value">${stats.totalTransactions}</div></div>
+                <div class="stat-card"><i class="fas fa-weight-hanging"></i><h3>Volume (kg)</h3><div class="value">${stats.totalVolume.toLocaleString()}</div></div>
+                <div class="stat-card"><i class="fas fa-coins"></i><h3>Total Cashflow</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(stats.totalCash)}</div></div>
             </div>
-            <div class="card">
-                <h3>📊 Status Sinkronisasi</h3>
-                <p>Data tersimpan di Google Sheets (Cloud)</p>
-                <p>Terakhir sync: ${LocalCache.lastSync ? new Date(LocalCache.lastSync).toLocaleString('id-ID') : 'Belum pernah'}</p>
-                <button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-cloud-upload-alt"></i> Sinkronkan Sekarang</button>
-            </div>
-            <div class="card">
-                <h3>📋 Data Tengkulak</h3>
-                <div class="table-wrapper">
-                    <table class="data-table">
-                        <thead><tr><th>Nama</th><th>Perusahaan</th><th>Petani</th><th>Transaksi</th><th>Saldo</th></tr></thead>
-                        <tbody>
-                            ${LocalCache.tengkulak.map(t => {
-                                const farmers = (LocalCache.farmers[t.id] || []).length;
-                                const trans = (LocalCache.transactions[t.id] || []).length;
-                                const balance = getBalance(t.id);
-                                return `<tr><td>${t.nama}</td><td>${t.perusahaan}</td><td>${farmers}</td><td>${trans}</td><td>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(balance)}</td></tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <div class="card"><h3>📊 Status Sinkronisasi</h3><p>Data tersimpan di Google Sheets (Cloud)</p><p>Terakhir sync: ${LocalCache.lastSync ? new Date(LocalCache.lastSync).toLocaleString('id-ID') : 'Belum pernah'}</p>
+            <button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-cloud-upload-alt"></i> Sinkronkan Sekarang</button></div>
+            <div class="card"><h3>📋 Data Tengkulak</h3><div class="table-wrapper"><table class="data-table"><thead><tr><th>Nama</th><th>Perusahaan</th><th>Petani</th><th>Transaksi</th><th>Saldo</th></tr></thead>
+            <tbody>${LocalCache.tengkulak.map(t => `<tr><td>${t.nama}</td><td>${t.perusahaan}</td><td>${(LocalCache.farmers[t.id]||[]).length}</td><td>${(LocalCache.transactions[t.id]||[]).length}</td><td>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(getBalance(t.id))}</td></tr>`).join('')}</tbody></table></div></div>
         `;
         document.getElementById('content').innerHTML = html;
     }
 
     function renderAdminTengkulak() {
-        const html = `<h2>📋 Daftar Tengkulak</h2>
-            <div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>ID</th><th>Nama</th><th>Perusahaan</th><th>Provinsi</th><th>Kontak</th></thead>
-            <tbody>${LocalCache.tengkulak.map(p => `<tr><td>${p.id}</td><td><strong>${p.nama}</strong></td><td>${p.perusahaan}</td><td>${p.provinsi || '-'}</td><td>${p.hp}</td></tr>`).join('')}</tbody>}</table></div></div>`;
+        const html = `<h2>📋 Daftar Tengkulak</h2><div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>ID</th><th>Nama</th><th>Perusahaan</th><th>Provinsi</th><th>Kontak</th></thead>
+            <tbody>${LocalCache.tengkulak.map(p => `<tr><td>${p.id}</td><td><strong>${p.nama}</strong></td><td>${p.perusahaan}</td><td>${p.provinsi||'-'}</td><td>${p.hp}</td></tr>`).join('')}</tbody></table></div></div>`;
         document.getElementById('content').innerHTML = html;
     }
 
     function renderAdminCommodities() {
         const html = `<div class="flex-between"><h2>🌾 Komoditas</h2><button class="btn" id="addCommBtn"><i class="fas fa-plus"></i> Tambah</button></div>
             <div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>Nama</th><th>Satuan</th><th>Harga Acuan</th><th>Aksi</th></thead>
-            <tbody>${LocalCache.commodities.map(c => `<tr><td><strong>${c.nama}</strong></td><td>${c.satuan}</td><td>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(c.harga_acuan)}</td><td><button class="btn btn-sm btn-secondary" onclick="editComm('${c.id}')">Edit</button></td></tr>`).join('')}</tbody>}</table></div></div>`;
+            <tbody>${LocalCache.commodities.map(c => `<tr><td><strong>${c.nama}</strong></td><td>${c.satuan}</td><td>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(c.harga_acuan)}</td><td><button class="btn btn-sm btn-secondary" onclick="editComm('${c.id}')">Edit</button></td></tr>`).join('')}</tbody></table></div></div>`;
         document.getElementById('content').innerHTML = html;
         document.getElementById('addCommBtn').onclick = async () => { 
             const name = prompt("Nama Komoditas Baru"); 
             if(name) { 
-                const newComm = { id: Date.now() + '-' + Math.random(), nama: name, satuan: "kg", harga_acuan: 1000 };
-                await API.add('commodities', newComm);
+                await API.add('commodities', { nama: name, satuan: "kg", harga_acuan: 1000 });
                 await LocalCache.syncAll();
                 renderAdminCommodities(); 
             } 
@@ -472,7 +633,7 @@
         const html = `
             <h2>👥 Manajemen User</h2>
             <div class="card"><h3>Tambah User Baru</h3>
-                <form id="addUserForm" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+                <form id="addUserForm" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
                     <div class="form-group" style="flex:1;"><label>Username</label><input type="text" id="newUsername" required></div>
                     <div class="form-group" style="flex:1;"><label>Password</label><input type="password" id="newPassword" required></div>
                     <div class="form-group" style="flex:1;"><label>Role</label><select id="newRole"><option value="admin">Admin</option><option value="tengkulak">Tengkulak</option></select></div>
@@ -480,7 +641,7 @@
                 </form>
             </div>
             <div class="card"><div class="table-wrapper"><table class="data-table"><thead><th>Username</th><th>Role</th><th>Tengkulak ID</th><th>Aksi</th></thead>
-            <tbody>${LocalCache.users.map(u => `<tr><td><strong>${u.username}</strong></td><td><span class="badge">${u.role}</span></td><td>${u.tengkulakId || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="delUser('${u.id}')">Hapus</button></td></tr>`).join('')}</tbody>}</table></div></div>`;
+            <tbody>${LocalCache.users.map(u => `<tr><td><strong>${u.username}</strong></td><td><span class="badge">${u.role}</span></td><td>${u.tengkulakId||'-'}</td><td><button class="btn btn-sm btn-danger" onclick="delUser('${u.id}')">Hapus</button></td></tr>`).join('')}</tbody></table></div></div>`;
         document.getElementById('content').innerHTML = html;
         
         document.getElementById('addUserForm').addEventListener('submit', async (e) => {
@@ -488,23 +649,15 @@
             const username = document.getElementById('newUsername').value.trim();
             const password = document.getElementById('newPassword').value.trim();
             const role = document.getElementById('newRole').value;
-            
             if (!username || !password) { alert('Isi username dan password!'); return; }
             if (LocalCache.users.some(u => u.username === username)) { alert('Username sudah ada!'); return; }
             
             let tengkulakId = null;
             if (role === 'tengkulak') {
                 tengkulakId = 'TK' + Date.now();
-                const newTengkulak = { 
-                    id: tengkulakId, nama: username, perusahaan: username, hp: '', 
-                    alamat: '', provinsi: '', kabupaten: '', kecamatan: '', desa: '', 
-                    komoditasUtama: '', createdAt: new Date().toISOString() 
-                };
-                await API.add('tengkulak', newTengkulak);
+                await API.add('tengkulak', { id: tengkulakId, nama: username, perusahaan: username, hp: '', alamat: '', provinsi: '', kabupaten: '', kecamatan: '', desa: '', komoditasUtama: '', createdAt: new Date().toISOString() });
             }
-            
-            const newUser = { id: Date.now() + '-' + Math.random(), username, password, role, tengkulakId, createdAt: new Date().toISOString() };
-            await API.add('users', newUser);
+            await API.add('users', { username, password, role, tengkulakId, createdAt: new Date().toISOString() });
             await LocalCache.syncAll();
             alert('User ditambahkan!');
             renderUserManagement();
@@ -520,18 +673,7 @@
     }
 
     function renderAdminSettings() {
-        const html = `<h2>⚙️ Pengaturan</h2>
-            <div class="card">
-                <h3>Koneksi Google Sheets</h3>
-                <p>API URL: ${API_URL}</p>
-                <p>Status: <span class="badge badge-stock">✅ Terhubung</span></p>
-                <p>Terakhir sync: ${LocalCache.lastSync ? new Date(LocalCache.lastSync).toLocaleString('id-ID') : 'Belum pernah'}</p>
-                <button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sinkronkan Data</button>
-            </div>
-            <div class="card">
-                <div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Reset data akan menghapus semua data di Google Sheets!</div>
-                <button class="btn btn-danger" id="resetAllDataBtn"><i class="fas fa-trash-alt"></i> Reset Semua Data</button>
-            </div>`;
+        const html = `<h2>⚙️ Pengaturan</h2><div class="card"><h3>Koneksi Google Sheets</h3><p>API URL: ${API_URL}</p><p>Status: <span class="badge badge-stock">✅ Terhubung</span></p><p>Terakhir sync: ${LocalCache.lastSync ? new Date(LocalCache.lastSync).toLocaleString('id-ID') : 'Belum pernah'}</p><button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sinkronkan Data</button></div>`;
         document.getElementById('content').innerHTML = html;
     }
 
@@ -544,8 +686,7 @@
         const root = document.getElementById("appRoot");
         root.innerHTML = `
             <div class="app">
-                <aside class="sidebar" id="sidebar">
-                    <div class="logo-area"><h2>TaniTrade Pro</h2><p>${profile.nama}</p></div>
+                <aside class="sidebar" id="sidebar"><div class="logo-area"><h2>TaniTrade Pro</h2><p>${profile.nama}</p></div>
                     <nav class="nav-menu"><ul>
                         <li data-menu="dashboard" class="active"><i class="fas fa-chart-pie"></i> Dashboard</li>
                         <li data-menu="transactions"><i class="fas fa-hand-holding-usd"></i> Transaksi</li>
@@ -553,21 +694,12 @@
                         <li data-menu="farmers"><i class="fas fa-users"></i> Petani</li>
                         <li data-menu="reports"><i class="fas fa-chart-simple"></i> Laporan</li>
                     </ul></nav>
-                    <div style="padding:16px; text-align:center; font-size:0.7rem; color:#64748b;">
-                        <span class="sync-status online" id="syncBadge">☁️ Cloud</span>
-                    </div>
+                    <div style="padding:16px;text-align:center;"><span class="sync-status online">☁️ Cloud</span></div>
                 </aside>
                 <main class="main-content">
-                    <header class="topbar">
-                        <button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <button class="btn btn-sm btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sync</button>
-                        </div>
-                        <div class="user-info">
-                            <span>${profile.nama}</span>
-                            <div class="avatar">TK</div>
-                            <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
-                        </div>
+                    <header class="topbar"><button class="menu-toggle-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+                        <div><button class="btn btn-sm btn-secondary" onclick="syncData()"><i class="fas fa-sync-alt"></i> Sync</button></div>
+                        <div class="user-info"><span>${profile.nama}</span><div class="avatar">TK</div><button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button></div>
                     </header>
                     <div class="content" id="content"></div>
                 </main>
@@ -581,6 +713,15 @@
             currentTengMenu = li.dataset.menu;
             renderTengContent(tid);
         }));
+        
+        if (!document.getElementById('farmerModal')) {
+            const modalDiv = document.createElement('div');
+            modalDiv.id = 'farmerModal';
+            modalDiv.className = 'modal';
+            modalDiv.innerHTML = `<div class="modal-content"><h3>✏️ Edit Petani</h3><div class="form-group"><label>Nama</label><input type="text" id="edit_nama"></div><div class="form-group"><label>HP</label><input type="text" id="edit_hp"></div><div class="form-group"><label>Desa</label><input type="text" id="edit_desa"></div><div class="form-group"><label>Kecamatan</label><input type="text" id="edit_kecamatan"></div><div style="display:flex;gap:10px;justify-content:flex-end;"><button class="btn btn-secondary" onclick="closeFarmerModal()">Batal</button><button class="btn" onclick="saveFarmerEdit()">Simpan</button></div></div>`;
+            document.body.appendChild(modalDiv);
+        }
+        
         renderTengContent(tid);
     }
 
@@ -607,11 +748,7 @@
                 <div class="stat-card"><i class="fas fa-chart-line"></i><h3>Penjualan</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(totalSale)}</div></div>
                 <div class="stat-card"><i class="fas fa-wallet"></i><h3>Saldo Kas</h3><div class="value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(balance)}</div></div>
             </div>
-            <div class="card">
-                <h3>📊 Ringkasan</h3>
-                <p>Data tersimpan di Google Sheets. Semua perubahan akan tersinkronisasi ke cloud.</p>
-                <button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-cloud-upload-alt"></i> Sinkronkan Sekarang</button>
-            </div>
+            <div class="card"><h3>📊 Ringkasan</h3><p>Data tersimpan di Google Sheets. Semua perubahan akan tersinkronisasi ke cloud.</p><button class="btn btn-secondary" onclick="syncData()"><i class="fas fa-cloud-upload-alt"></i> Sinkronkan Sekarang</button></div>
         `;
         document.getElementById('content').innerHTML = html;
     }
@@ -627,27 +764,23 @@
         
         const html = `
             <div class="card">
-                <div class="flex-between"><h3>➕ Input Transaksi</h3></div>
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="buy">Beli</button>
-                    <button class="tab-btn" data-tab="sell">Jual</button>
-                    <button class="tab-btn" data-tab="op">Operasional</button>
-                </div>
+                <div class="flex-between"><h3>➕ Input Transaksi</h3><button class="btn btn-print-all" onclick="printAllTransactions('${tid}')"><i class="fas fa-list"></i> Cetak Semua</button></div>
+                <div class="tab-buttons"><button class="tab-btn active" data-tab="buy">Beli</button><button class="tab-btn" data-tab="sell">Jual</button><button class="tab-btn" data-tab="op">Operasional</button></div>
                 <div id="transFormContainer"></div>
             </div>
             <div class="card">
-                <h3>📜 Riwayat Transaksi</h3>
-                <div class="table-wrapper"><table class="data-table"><thead><th>Tanggal</th><th>Jenis</th><th>Detail</th><th>Nominal</th></thead>
+                <div class="flex-between"><h3>📜 Riwayat Transaksi</h3><button class="btn btn-sm btn-secondary" onclick="printAllTransactions('${tid}')"><i class="fas fa-print"></i> Cetak Daftar</button></div>
+                <div class="table-wrapper"><table class="data-table"><thead><th>Tanggal</th><th>Jenis</th><th>Detail</th><th>Nominal</th><th>Aksi</th></thead>
                 <tbody>${allEntries.slice(0, 20).map(e => {
                     let detail = e.komoditas_nama || e.kategori || '-';
                     if (e.tipe === 'pembelian' && e.petani_id) detail = getFarmerName(tid, e.petani_id) + ' - ' + detail;
-                    return `<tr><td>${e.tanggal || '-'}</td><td><span class="badge">${e.tipe}</span></td><td>${detail}</td><td><strong>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(e.total || e.nominal || 0)}</strong></td></tr>`;
+                    return `<tr><td>${e.tanggal||'-'}</td><td><span class="badge">${e.tipe}</span></td><td>${detail}</td><td><strong>${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'}).format(e.total||e.nominal||0)}</strong></td>
+                        <td class="action-icons"><i class="fas fa-trash-alt" onclick="deleteTransaction('${tid}', '${e.id}', '${e.entryType}')" title="Hapus"></i><i class="fas fa-receipt" onclick="printBill(${JSON.stringify(e).replace(/"/g, '&quot;')}, '${tid}')" title="Cetak"></i></td></tr>`;
                 }).join('')}</tbody></table></div>
             </div>
         `;
         document.getElementById('content').innerHTML = html;
         
-        // Form pembelian
         const container = document.getElementById('transFormContainer');
         container.innerHTML = `
             <form id="buyForm">
@@ -660,10 +793,14 @@
             </form>
         `;
         
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => { 
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+            btn.classList.add('active'); 
+        }));
+        
         document.getElementById('buyForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const transData = {
-                id: Date.now() + '-' + Math.random(),
                 tengkulakId: tid,
                 tanggal: document.getElementById('tanggal').value,
                 tipe: 'pembelian',
@@ -674,19 +811,10 @@
                 total: parseFloat(document.getElementById('jumlah').value) * parseFloat(document.getElementById('harga').value),
                 petani_id: document.getElementById('petaniId').value
             };
+            transData.id = Date.now() + '-' + Math.random();
             
             await API.add('transactions', transData, tid);
-            
-            const cashData = {
-                id: transData.id,
-                tengkulakId: tid,
-                tanggal: transData.tanggal,
-                tipe: 'pengeluaran',
-                kategori: 'Pembelian ' + transData.komoditas_nama,
-                nominal: transData.total
-            };
-            await API.add('cashflow', cashData, tid);
-            
+            await API.add('cashflow', { id: transData.id, tengkulakId: tid, tanggal: transData.tanggal, tipe: 'pengeluaran', kategori: 'Pembelian ' + transData.komoditas_nama, nominal: transData.total }, tid);
             await LocalCache.syncAll();
             alert('Pembelian berhasil disimpan!');
             renderTengTransactions(tid);
@@ -696,7 +824,6 @@
     function renderTengStock(tid) {
         const stock = getStock(tid);
         const commodities = LocalCache.commodities || [];
-        
         const html = `
             <div class="card"><h3>📦 Stok Komoditas</h3>
             <div class="table-wrapper"><table class="data-table"><thead><tr><th>Komoditas</th><th>Stok (kg)</th><th>Status</th></tr></thead>
@@ -711,8 +838,11 @@
         const html = `
             <div class="card">
                 <div class="flex-between"><h3>👨‍🌾 Data Petani</h3><button class="btn" id="addFarmerBtn"><i class="fas fa-plus"></i> Tambah</button></div>
-                <div class="table-wrapper"><table class="data-table"><thead><tr><th>Nama</th><th>HP</th><th>Desa</th><th>Kecamatan</th></tr></thead>
-                <tbody>${farmers.map(f => `<tr><td><strong>${f.nama}</strong></td><td>${f.hp || '-'}</td><td>${f.desa || '-'}</td><td>${f.kecamatan || '-'}</td></tr>`).join('')}</tbody></table></div>
+                <div class="search-bar"><input type="text" id="searchFarmer" placeholder="🔍 Cari nama petani..." style="flex:1;"></div>
+                <div class="table-wrapper"><table class="data-table"><thead><tr><th>Nama</th><th>HP</th><th>Desa</th><th>Kecamatan</th><th>Aksi</th></tr></thead>
+                <tbody id="farmerBody">${farmers.map(f => `<tr><td><strong>${f.nama}</strong></td><td>${f.hp||'-'}</td><td>${f.desa||'-'}</td><td>${f.kecamatan||'-'}</td>
+                    <td><div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" onclick="showEditFarmerModal('${tid}', ${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteFarmer('${tid}', '${f.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('')}</tbody></table></div>
             </div>
         `;
         document.getElementById('content').innerHTML = html;
@@ -721,7 +851,6 @@
             const name = prompt("Nama Petani");
             if (name) {
                 const newFarmer = {
-                    id: Date.now() + '-' + Math.random(),
                     tengkulakId: tid,
                     nama: name,
                     hp: prompt("Nomor HP:", "") || "",
@@ -734,6 +863,22 @@
                 renderTengFarmers(tid);
             }
         };
+        
+        window.deleteFarmer = async (tidParam, id) => {
+            if(confirm('Hapus petani ini?')) {
+                await API.delete('farmers', id, tidParam);
+                await LocalCache.syncAll();
+                renderTengFarmers(tidParam);
+            }
+        };
+        
+        document.getElementById('searchFarmer').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = farmers.filter(f => f.nama.toLowerCase().includes(term));
+            document.getElementById('farmerBody').innerHTML = filtered.map(f => `<tr><td><strong>${f.nama}</strong></td><td>${f.hp||'-'}</td><td>${f.desa||'-'}</td><td>${f.kecamatan||'-'}</td>
+                <td><div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" onclick="showEditFarmerModal('${tid}', ${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteFarmer('${tid}', '${f.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('');
+        });
     }
 
     function renderTengReports(tid) {
@@ -748,19 +893,13 @@
         
         const html = `
             <h2>📊 Laporan</h2>
-            <div class="card">
-                <div class="financial-report">
-                    <h3 style="text-align:center;">${profile?.nama || ''}</h3>
-                    <p style="text-align:center;">${profile?.perusahaan || ''}</p>
-                    <hr>
-                    <div style="display:flex; justify-content:space-between;"><strong>Penjualan:</strong> ${formatRp(totalJual)}</div>
-                    <div style="display:flex; justify-content:space-between;"><strong>Pembelian:</strong> ${formatRp(totalBeli)}</div>
-                    <div style="display:flex; justify-content:space-between;"><strong>Operasional:</strong> ${formatRp(op)}</div>
-                    <hr>
-                    <div style="display:flex; justify-content:space-between; background:#f0fdf4; padding:10px; border-radius:10px;">
-                        <strong>Laba Bersih:</strong> <strong class="${laba >= 0 ? 'text-success' : 'text-danger'}">${formatRp(laba)}</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;"><strong>Saldo Kas:</strong> ${formatRp(getBalance(tid))}</div>
+            <div class="card"><div style="display:flex;gap:10px;margin-bottom:16px;"><button class="btn" onclick="window.print()"><i class="fas fa-print"></i> Cetak</button></div>
+                <div class="financial-report"><h3 style="text-align:center;">${profile?.nama || ''}</h3><p style="text-align:center;">${profile?.perusahaan || ''}</p><hr>
+                    <div style="display:flex;justify-content:space-between;"><strong>Penjualan:</strong> ${formatRp(totalJual)}</div>
+                    <div style="display:flex;justify-content:space-between;"><strong>Pembelian:</strong> ${formatRp(totalBeli)}</div>
+                    <div style="display:flex;justify-content:space-between;"><strong>Operasional:</strong> ${formatRp(op)}</div><hr>
+                    <div style="display:flex;justify-content:space-between;background:#f0fdf4;padding:10px;border-radius:10px;"><strong>Laba Bersih:</strong> <strong class="${laba >= 0 ? 'text-success' : 'text-danger'}">${formatRp(laba)}</strong></div>
+                    <div style="display:flex;justify-content:space-between;"><strong>Saldo Kas:</strong> ${formatRp(getBalance(tid))}</div>
                 </div>
             </div>
         `;
@@ -768,12 +907,15 @@
     }
 
     // ==================== START ====================
+    window.showEditFarmerModal = showEditFarmerModal;
+    window.closeFarmerModal = closeFarmerModal;
+    window.saveFarmerEdit = saveFarmerEdit;
+    
     (async function() {
         LocalCache.load();
         const storedUser = sessionStorage.getItem("currentUser");
         if (storedUser) currentUser = JSON.parse(storedUser);
         
-        // Coba sync data saat startup
         if (API_URL !== 'YOUR_SCRIPT_URL') {
             await LocalCache.syncAll();
         }
